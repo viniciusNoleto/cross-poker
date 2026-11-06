@@ -46,7 +46,11 @@ export function PlayDiscardLogicComponent({ logicData, selectedCards, canPlay }:
 
   return (
     <FormButton
-      color="secondary"
+      variant="white"
+      color="dark"
+      size="md"
+      radius={0}
+      className="min-w-[112px]"
       disabled={!canPlay || !quantityValid}
       loading={playDiscardIsPending}
       tooltip={!canPlay ? 'Aguarde sua vez' : (!quantityValid ? 'Selecione de 1 a 5 cartas' : undefined)}

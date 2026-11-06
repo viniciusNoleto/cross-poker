@@ -8,7 +8,7 @@ import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
 import type { ICard } from '../models/Card';
 
-type IComboInfo = {
+export type IComboInfo = {
   id: string;
   name: string;
   baseChips: number;
@@ -19,7 +19,7 @@ type IComboInfo = {
 
 // Source of truth: .claude/rules/game-concept.md, section 2, "Combinações e pontuação".
 // Don't change these values without updating that document too.
-const COMBOS: IComboInfo[] = [
+export const COMBOS: IComboInfo[] = [
   {
     id: 'high_card',
     name: 'Carta Alta',
@@ -209,13 +209,16 @@ export function ComboHelpButton() {
   return (
     <>
       <FormButton
-        variant="light"
-        color="primary"
-        leftIcon="lucide:help-circle"
+        variant="subtle"
+        color="gray.0"
+        radius={0}
+        leftIcon="lucide:circle-help"
         tooltip="Como pontuar"
         onClick={() => setOpened(true)}
       >
-        Como pontuar
+        <span className="hidden sm:inline">
+          Como pontuar
+        </span>
       </FormButton>
 
       <ComboReferenceLogicComponent

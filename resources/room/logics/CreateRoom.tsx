@@ -62,6 +62,8 @@ export function CreateRoomLogicComponent({ logicData }: { logicData: ReturnType<
       <FormTextInput
         label="Seu nome"
         placeholder="Como você quer ser chamado?"
+        size="md"
+        radius={0}
         {...createRoomField('name')}
         required
       />
@@ -69,6 +71,8 @@ export function CreateRoomLogicComponent({ logicData }: { logicData: ReturnType<
       <FormButton
         type="submit"
         color="primary"
+        size="lg"
+        radius={0}
         loading={createRoomIsPending}
         rightIcon="lucide:sparkles"
       >

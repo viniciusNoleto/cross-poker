@@ -10,7 +10,7 @@ Cada arquivo em `.claude/rules/` documenta a interface exata, o comportamento in
 
 ## Conceito do jogo
 
-Qualquer tarefa relacionada à lógica do jogo (sala, partida, mesa, bolo, troca, compra, pontuação, animações de jogo) **deve** começar pela leitura de `game-concept.md` — ele define o vocabulário oficial (conceitos em português, mapeados para nomes em inglês no código — ver seção 1), as regras operacionais e as decisões de arquitetura (modelo de dados, sessão de jogador, tempo real via SSE). O texto original das regras está em `concept.md`, na raiz do projeto.
+Qualquer tarefa relacionada à lógica do jogo (sala, partida, mesa, bolo, troca, compra, pontuação, animações de jogo) **deve** começar pela leitura de `game-concept.md` — ele define o vocabulário oficial (conceitos em português, mapeados para nomes em inglês no código — ver seção 1), as regras operacionais e as decisões de arquitetura (modelo de dados, sessão de jogador, tempo real via SSE). O texto original das regras (em português) agora está documentado no `README.md`, na raiz do projeto.
 
 ## Formatação JSX/TSX
 

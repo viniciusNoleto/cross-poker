@@ -21,7 +21,7 @@ export function DiscardPile({ discard }: DiscardPileProps) {
   return (
     <>
       <div
-        className="flex flex-col items-center gap-1 cursor-default"
+        className="flex flex-col items-center gap-1.5 cursor-zoom-in"
         onMouseEnter={() => {
           if (discard.length) setOpened(true);
         }}
@@ -38,12 +38,12 @@ export function DiscardPile({ discard }: DiscardPileProps) {
 
           <UtilsIf condition={!discard.length}>
             {() => (
-              <div className="w-12 h-16 rounded-md border-2 border-dashed border-white/20" />
+              <div className="w-12 h-[67px] rounded-[6px] border-2 border-dashed border-paper/25" />
             )}
           </UtilsIf>
         </div>
 
-        <span className="text-white/70 text-xs">
+        <span className="text-paper/85 text-[13px] tabular">
           {`Bolo (${discard.length})`}
         </span>
       </div>

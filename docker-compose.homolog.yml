@@ -1,15 +1,18 @@
 services:
   cross-poker-front:
     container_name: cross-poker-front
-    user: node
     restart: unless-stopped
     tty: true
+    env_file: .env
+    environment:
+      POSTGRES_HOST: cross-poker-postgres
+      POSTGRES_PORT: 5432
     build:
       dockerfile: ./configs/docker/node/Dockerfile.deploy
-    ports:
-      - ${APP_PORT:-80}:3000
+    # Sem porta publicada: o Nginx Proxy Manager alcança o container pela rede dele (proxy).
     networks:
       - cross-poker-network
+      - proxy
     depends_on:
       cross-poker-postgres:
         condition: service_healthy
@@ -27,7 +30,7 @@ services:
     networks:
       - cross-poker-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cross_poker}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,6 +39,9 @@ networks:
   cross-poker-network:
     name: cross-poker-network
     driver: bridge
+  proxy:
+    name: ${PROXY_NETWORK:-nginx-proxy-manager}
+    external: true
 
 volumes:
   cross-poker-postgres-data:

@@ -1,10 +1,10 @@
 import Color from 'color'
 
-export const PRIMARY_COLOR = '#0F6B3E'
+export const PRIMARY_COLOR = '#17603F'
 
-export const SECONDARY_COLOR = '#D4AF37'
+export const SECONDARY_COLOR = '#F2B739'
 
-export const TERTIARY_COLOR = '#7C2D3A'
+export const TERTIARY_COLOR = '#B3132B'
 
 export const PRIMARY_COLOR_PALETTE = colorVariations(PRIMARY_COLOR)
 

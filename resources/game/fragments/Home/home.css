@@ -1,0 +1,153 @@
+/* Home (landing) — estilos que o Tailwind não expressa bem: recortes, pilhas fixas, cortina. */
+
+.home-frame {
+  padding-inline: 16px;
+}
+
+@media (min-width: 768px) {
+  .home-frame {
+    padding-inline: 32px;
+  }
+}
+
+/* Entrada das seções: só esconde depois que o script está pronto (ver useReveal). */
+.reveal-ready [data-reveal]:not(.is-in) {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+[data-reveal] {
+  transition:
+    opacity 0.7s var(--ease-deal) calc(var(--i, 0) * 80ms),
+    transform 0.8s var(--ease-deal) calc(var(--i, 0) * 80ms);
+}
+
+/* Carta do hero: cantos internos recortados como uma carta de baralho antiga. */
+.hero-card {
+  --notch: 22px;
+  clip-path: polygon(
+    var(--notch) 0, calc(100% - var(--notch)) 0, 100% var(--notch),
+    100% 100%, 0 100%, 0 var(--notch)
+  );
+}
+
+.hero-card-back {
+  background-size: 14px 14px;
+}
+
+/* Comanda (como se joga): base cortada em zigue-zague. */
+.slip {
+  --tooth: 14px;
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--tooth)),
+    95% 100%, 90% calc(100% - var(--tooth)), 85% 100%, 80% calc(100% - var(--tooth)),
+    75% 100%, 70% calc(100% - var(--tooth)), 65% 100%, 60% calc(100% - var(--tooth)),
+    55% 100%, 50% calc(100% - var(--tooth)), 45% 100%, 40% calc(100% - var(--tooth)),
+    35% 100%, 30% calc(100% - var(--tooth)), 25% 100%, 20% calc(100% - var(--tooth)),
+    15% 100%, 10% calc(100% - var(--tooth)), 5% 100%, 0 calc(100% - var(--tooth))
+  );
+}
+
+.slip-leader {
+  flex: 1;
+  min-width: 24px;
+  height: 4px;
+  margin-inline: 8px;
+  align-self: flex-end;
+  margin-bottom: 0.4em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Ccircle cx='2' cy='2' r='1.7' fill='%234b463d'/%3E%3C/svg%3E");
+  background-size: 8px 4px;
+  background-repeat: repeat-x;
+  opacity: 0.55;
+}
+
+/* Jogadas: folhas que sobem umas sobre as outras, como fichas num arquivo. */
+.sheet {
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .sheet {
+    position: sticky;
+    top: calc(var(--sheet-index) * 72px);
+  }
+}
+
+/* Cortina: o conteúdo sobe e revela o rodapé que já está esperando por baixo. */
+.curtain-main {
+  position: relative;
+  z-index: 1;
+}
+
+.curtain-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* Botões da home: blocos chapados, cantos retos, resposta ao toque. */
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding-inline: 26px;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: 0.005em;
+  transition: transform 0.18s var(--ease-deal), background-color 0.18s ease;
+}
+
+.home-button:hover {
+  transform: translateY(-2px);
+}
+
+.home-button:active {
+  transform: translateY(1px);
+}
+
+.home-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 0.2s ease, color 0.2s ease;
+}
+
+.home-link:hover {
+  text-decoration-color: var(--gold);
+}
+
+/* Naipes que flutuam devagar sobre o feltro (animação das fichas). */
+.suit-float {
+  opacity: 0.55;
+  animation: suit-float 12s ease-in-out infinite alternate;
+}
+
+@keyframes suit-float {
+  from {
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+
+  to {
+    transform: translate3d(0, -26px, 0) rotate(10deg);
+  }
+}
+
+/* Mão da peça interativa: cada carta chega da pilha, uma depois da outra. */
+.hand-deal {
+  animation: hand-deal 0.6s var(--ease-deal) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+@keyframes hand-deal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -40px, 0) rotate(-6deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

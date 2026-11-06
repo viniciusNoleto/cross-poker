@@ -1,4 +1,8 @@
-FROM node:lts-alpine
+# Debian (glibc), não Alpine: o node_modules é compartilhado com o host pelo bind mount,
+# e os binários nativos (lightningcss, tailwind oxide, esbuild…) precisam servir aos dois.
+FROM node:lts-slim
+
+USER node
 
 WORKDIR /app
 

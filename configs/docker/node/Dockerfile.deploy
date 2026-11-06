@@ -6,16 +6,31 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 FROM node:lts-alpine
 
 WORKDIR /app
 
-RUN npm install -g serve
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
 
-COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --chown=node:node package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=builder --chown=node:node /app/.next ./.next
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/next.config.ts ./next.config.ts
+COPY --chown=node:node db/migrations ./db/migrations
+COPY --chown=node:node db/migrate.mjs ./db/migrate.mjs
+
+USER node
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Aplica as migrações pendentes do Drizzle e sobe o servidor Next (um único processo:
+# o pub/sub do SSE é em memória, então não escale este container horizontalmente).
+CMD ["sh", "-c", "node db/migrate.mjs && exec node_modules/.bin/next start -H 0.0.0.0 -p ${PORT}"]

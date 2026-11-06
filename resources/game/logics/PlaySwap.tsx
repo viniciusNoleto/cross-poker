@@ -63,8 +63,8 @@ export function StartSwapLogicComponent({ logicData, disabled }: { logicData: Re
         {
           condition: startSwapOpen,
           content: () => (
-            <div className="flex items-center gap-2 bg-black/30 rounded-lg px-3 py-1.5">
-              <span className="text-white/70 text-xs whitespace-nowrap">
+            <div className="flex items-center gap-2 bg-felt-night px-3 py-1.5">
+              <span className="text-paper text-sm whitespace-nowrap">
                 Trocar quantas cartas?
               </span>
 
@@ -73,15 +73,17 @@ export function StartSwapLogicComponent({ logicData, disabled }: { logicData: Re
                 onChange={(value) => setStartSwapQuantity(Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, Number(value) || MIN_QUANTITY)))}
                 min={MIN_QUANTITY}
                 max={MAX_QUANTITY}
-                size="xs"
+                size="sm"
+                radius={0}
                 className="w-16"
                 disabled={startSwapIsPending}
               />
 
               <FormButton
-                size="xs"
+                size="sm"
+                radius={0}
                 variant="subtle"
-                color="gray"
+                color="gray.0"
                 disabled={startSwapIsPending}
                 onClick={() => setStartSwapOpen(false)}
               >
@@ -89,8 +91,9 @@ export function StartSwapLogicComponent({ logicData, disabled }: { logicData: Re
               </FormButton>
 
               <FormButton
-                size="xs"
-                color="primary"
+                size="sm"
+                radius={0}
+                color="tertiary"
                 loading={startSwapIsPending}
                 rightIcon="lucide:repeat"
                 onClick={() => startSwap()}
@@ -104,7 +107,10 @@ export function StartSwapLogicComponent({ logicData, disabled }: { logicData: Re
           content: () => (
             <FormButton
               variant="filled"
-              color="blue"
+              color="tertiary"
+              size="md"
+              radius={0}
+              className="min-w-[112px]"
               disabled={disabled}
               rightIcon="lucide:repeat"
               onClick={() => setStartSwapOpen(true)}
@@ -179,26 +185,27 @@ export function ChooseSwapLogicComponent({ state, selectedCards, setSelectedCard
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 bg-black/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-secondary-400/40">
+    <div className="flex flex-wrap items-center justify-center gap-2">
       <UtilsIf
         cases={[
           {
             condition: iAlreadyChose,
             content: () => (
-              <span className="text-white/70 text-sm">
+              <span className="text-paper/85 text-sm">
                 Aguardando seu parceiro escolher as cartas da troca...
               </span>
             ),
           },
           {
             content: () => (
-              <div className="flex items-center gap-3">
-                <span className="text-white text-sm">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+                <span className="text-gold text-sm font-bold">
                   {`Escolha ${pendingSwap.quantity} carta(s) da sua mão para a troca (${selectedCards.length}/${pendingSwap.quantity})`}
                 </span>
 
                 <FormButton
                   color="secondary"
+                  radius={0}
                   loading={chooseSwapIsPending}
                   disabled={selectedCards.length !== pendingSwap.quantity}
                   rightIcon="lucide:repeat"
@@ -224,7 +231,7 @@ export function PendingSwapBanner({ state }: { state: IGameState }) {
   const partner = players.find((player) => player.seat === pendingSwap.partner_seat);
 
   return (
-    <span className="px-4 py-1.5 rounded-full bg-black/30 text-white/80 text-xs backdrop-blur-sm">
+    <span className="px-4 py-1.5 bg-felt-night text-paper/85 text-sm">
       {`Troca em andamento entre ${initiator?.name ?? '—'} e ${partner?.name ?? '—'}...`}
     </span>
   );

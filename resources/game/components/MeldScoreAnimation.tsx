@@ -5,6 +5,7 @@ import { animate, motion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
+import { ChipBurst } from './ChipBurst';
 import { chipsForCard } from '../models/Card';
 import { ECombo } from '../enums/ECombo';
 import type { ICard } from '../models/Card';
@@ -233,7 +234,7 @@ export function MeldScoreAnimation({
                 <Card
                   card={card}
                   size="md"
-                  className={scoring ? 'ring-2 ring-secondary-400/80 shadow-[0_0_16px_rgba(212,175,55,0.7)]' : 'grayscale'}
+                  className={scoring ? 'outline-[3px] outline-gold' : 'grayscale'}
                 />
               </motion.div>
             );
@@ -246,28 +247,42 @@ export function MeldScoreAnimation({
             const card = meldedCards[justRevealedIndex];
 
             return (
-              <motion.span
-                key={card.id}
-                className="absolute left-0 top-0 text-secondary-300 font-mono font-extrabold text-lg whitespace-nowrap"
-                style={{ translateX: '-50%' }}
-                initial={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2, opacity: 0, scale: 0.6 }}
-                animate={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2 - 34, opacity: [0, 1, 1, 0], scale: 1 }}
-                transition={{ duration: (HOP_DURATION_MS + 150) / 1000, ease: 'easeOut' }}
-              >
-                {`+${chipsForCard(card)}`}
-              </motion.span>
+              <>
+                <div
+                  key={`burst-${card.id}`}
+                  className="absolute left-0 top-0"
+                  style={{ transform: `translate(${pos.x}px, ${pos.y - CARD_HEIGHT / 2}px)` }}
+                >
+                  <ChipBurst
+                    count={3}
+                    reach={48}
+                    size={16}
+                  />
+                </div>
+
+                <motion.span
+                  key={card.id}
+                  className="absolute left-0 top-0 text-gold font-display font-medium text-2xl tabular whitespace-nowrap"
+                  style={{ translateX: '-50%' }}
+                  initial={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2, opacity: 0, scale: 0.6 }}
+                  animate={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2 - 34, opacity: [0, 1, 1, 0], scale: 1 }}
+                  transition={{ duration: (HOP_DURATION_MS + 150) / 1000, ease: 'easeOut' }}
+                >
+                  {`+${chipsForCard(card)}`}
+                </motion.span>
+              </>
             );
           }}
         </UtilsIf>
       </div>
 
       <div
-        className="absolute left-1/2 top-1/2 flex flex-col items-center gap-1.5 bg-black/30 backdrop-blur-sm rounded-lg px-5 py-2.5 border border-secondary-400/40 shadow-[0_0_18px_rgba(212,175,55,0.35)]"
+        className="absolute left-1/2 top-1/2 flex flex-col items-center gap-1.5 bg-felt-night px-7 py-4 min-w-[220px] shadow-[0_18px_40px_-16px_rgba(0,0,0,0.7)]"
         style={{ transform: 'translate(-50%, 86px)' }}
       >
         <UtilsIf condition={phase !== 'flying' && !!label}>
           {() => (
-            <span className="text-white/70 font-semibold text-[10px] uppercase tracking-wide">
+            <span className="text-paper/80 text-[13px]">
               {label}
             </span>
           )}
@@ -275,7 +290,7 @@ export function MeldScoreAnimation({
 
         <UtilsIf condition={phase !== 'flying'}>
           {() => (
-            <span className="text-secondary-300 font-bold uppercase tracking-wide text-sm">
+            <span className="text-gold font-display italic text-[26px] leading-none">
               {COMBO_NAME[combo]}
             </span>
           )}
@@ -283,15 +298,15 @@ export function MeldScoreAnimation({
 
         <UtilsIf condition={phase !== 'flying'}>
           {() => (
-            <div className="flex items-center gap-2 font-mono">
-              <span className="text-white font-bold tabular-nums text-2xl">
+            <div className="flex items-center gap-2 font-display tabular">
+              <span className="text-paper text-[30px] leading-none">
                 {chipsShown}
               </span>
 
               <UtilsIf condition={phase === 'multiplier' || phase === 'total'}>
                 {() => (
                   <>
-                    <span className="text-white/50">
+                    <span className="text-paper/60 text-xl">
                       ×
                     </span>
 
@@ -299,7 +314,7 @@ export function MeldScoreAnimation({
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.3, ease: 'backOut' }}
-                      className="text-secondary-300 font-bold tabular-nums text-2xl"
+                      className="text-gold text-[30px] leading-none"
                     >
                       {multiplier}
                     </motion.span>
@@ -312,11 +327,22 @@ export function MeldScoreAnimation({
 
         <UtilsIf condition={phase === 'total'}>
           {() => (
+            <ChipBurst
+              count={Math.min(14, 5 + Math.floor(points / 40))}
+              reach={140}
+              size={26}
+              delay={0.15}
+            />
+          )}
+        </UtilsIf>
+
+        <UtilsIf condition={phase === 'total'}>
+          {() => (
             <motion.span
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.35, ease: 'backOut' }}
-              className="text-white font-mono font-extrabold tabular-nums text-3xl"
+              className="text-paper font-display tabular text-[36px] leading-none"
             >
               {`= ${pointsShown} pontos`}
             </motion.span>

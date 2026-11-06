@@ -24,7 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <MantineProvider
           theme={mantineTheme}
-          defaultColorScheme="auto"
+          defaultColorScheme="light"
         >
           <Notifications position="top-right" />
 

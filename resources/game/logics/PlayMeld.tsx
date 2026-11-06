@@ -71,7 +71,10 @@ export function PlayMeldLogicComponent({ logicData, selectedCards, disabled }: {
 
   return (
     <FormButton
-      color="primary"
+      color="secondary"
+      size="md"
+      radius={0}
+      className="min-w-[112px]"
       disabled={!canPlay}
       loading={playMeldIsPending}
       tooltip={selectedCards.length === 0 ? 'Selecione de 1 a 5 cartas' : undefined}

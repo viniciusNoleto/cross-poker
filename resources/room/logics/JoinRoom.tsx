@@ -67,6 +67,8 @@ export function JoinRoomLogicComponent({ logicData }: { logicData: ReturnType<ty
       <FormTextInput
         label="Seu nome"
         placeholder="Como você quer ser chamado?"
+        size="md"
+        radius={0}
         {...joinRoomField('name')}
         required
       />
@@ -74,14 +76,18 @@ export function JoinRoomLogicComponent({ logicData }: { logicData: ReturnType<ty
       <FormTextInput
         label="Código da sala"
         placeholder="Ex: 7K2P9M"
+        size="md"
+        radius={0}
         {...joinRoomField('code')}
-        className="uppercase"
+        classNames={{ input: 'uppercase tracking-[0.12em]' }}
         required
       />
 
       <FormButton
         type="submit"
         color="secondary"
+        size="lg"
+        radius={0}
         loading={joinRoomIsPending}
         rightIcon="lucide:log-in"
       >

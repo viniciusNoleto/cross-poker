@@ -1,6 +1,6 @@
 # Cross Poker — Conceito e Arquitetura do Jogo
 
-Este arquivo é a fonte de verdade para qualquer trabalho relacionado à lógica do jogo (sala, partida, mesa, bolo, troca, compra, pontuação, animações). As regras originais do jogo estão em `concept.md` (raiz do projeto) — leia-o também se precisar do texto original. Este documento traduz essas regras em decisões de implementação e fixa o vocabulário/nomenclatura que **todo** código deve seguir.
+Este arquivo é a fonte de verdade para qualquer trabalho relacionado à lógica do jogo (sala, partida, mesa, bolo, troca, compra, pontuação, animações). As regras originais do jogo estão documentadas no `README.md` (raiz do projeto) — leia-o também se precisar do texto original. Este documento traduz essas regras em decisões de implementação e fixa o vocabulário/nomenclatura que **todo** código deve seguir.
 
 Este projeto foi criado a partir do `~/personal/white-label-inventory-system` (mesma arquitetura Next.js + Drizzle + TanStack Query + Mantine + Tailwind), mas é um produto totalmente diferente: um **jogo de cartas online para jogar com amigos**, baseado num jogo de baralho tradicional em duplas com mecânicas inspiradas em Balatro. **Ignore qualquer estilo visual do sistema antigo** (StockFlow / inventário) — a identidade visual deste projeto é a de um jogo de cartas: mesa de jogo, cartas com animações ao virar/mover/comprar/jogar, deve ser bonito e "tátil".
 
@@ -8,12 +8,12 @@ Este projeto foi criado a partir do `~/personal/white-label-inventory-system` (m
 
 ## 1. Vocabulário oficial e mapeamento para o código
 
-Os termos abaixo são nomes de mecânicas específicas do jogo. Continue usando os termos em português na conversa, no `concept.md` e neste documento — são o vocabulário conceitual do jogo. **No código** (rotas, tabelas, enums, interfaces, nomes de arquivo), porém, use os nomes em inglês da coluna "Código" — essa tradução foi uma decisão deliberada para manter o código em inglês; apenas texto voltado ao usuário final (labels, botões, mensagens) continua em português.
+Os termos abaixo são nomes de mecânicas específicas do jogo. Continue usando os termos em português na conversa, no `README.md` e neste documento — são o vocabulário conceitual do jogo. **No código** (rotas, tabelas, enums, interfaces, nomes de arquivo), porém, use os nomes em inglês da coluna "Código" — essa tradução foi uma decisão deliberada para manter o código em inglês; apenas texto voltado ao usuário final (labels, botões, mensagens) continua em português.
 
 | Termo (conceito) | Código (EN) | Significado |
 |---|---|---|
 | **Partida** | `Game` | Uma rodada completa do jogo, disputada por 4 jogadores em 2 duplas. |
-| **Sala** | `Room` | Lobby onde jogadores se reúnem antes da Partida começar (conceito de infraestrutura, não está no `concept.md` original). |
+| **Sala** | `Room` | Lobby onde jogadores se reúnem antes da Partida começar (conceito de infraestrutura, não está no texto original de regras do `README.md`). |
 | **Monte** | `Deck` | Pilha de compra, com as cartas remanescentes após a distribuição inicial. |
 | **Bolo** | `Discard` | Pilha de descarte da Partida (compartilhada). Contém cartas descartadas (viradas para baixo) e cartas jogadas em Mesas (viradas para cima). Também é o nome do **token/ação** "usar 1 Bolo" (cada jogador começa com 5). |
 | **Mesa** | `Meld` | Jogada de pontuação: usar 1 a 5 cartas da mão para formar a melhor combinação válida. Também é o nome do **token/ação** "usar 1 Mesa" (cada jogador começa com 5). Não usamos `Play`/`Table` no código: `Play` colide com o verbo genérico já usado nos nomes de serviço (`play{Ação}Service`, ex. `playMeldService`/`playDiscardService`), e `Table` colidiria com `UtilsTable`/"tabela do banco". |
@@ -31,7 +31,7 @@ Os termos abaixo são nomes de mecânicas específicas do jogo. Continue usando 
 
 ## 2. Regras do jogo (resumo operacional)
 
-Ver `concept.md` para o texto integral. Pontos que a implementação precisa respeitar à risca:
+Ver `README.md` para o texto integral das regras originais. Pontos que a implementação precisa respeitar à risca:
 
 - 4 jogadores, 2 duplas, sentados em posições opostas (assentos 0-3; equipe A = assentos {0,2}, equipe B = assentos {1,3}).
 - Ordem de turno: sentido horário (0→1→2→3→0...), o que já alterna equipes automaticamente a cada turno.
@@ -69,11 +69,11 @@ Ver `concept.md` para o texto integral. Pontos que a implementação precisa res
 | Rei / Dama / Valete / 10 | 10 |
 | 9..2 | valor de face |
 
-### Decisões assumidas (regras não 100% explícitas no `concept.md` — mantenha consistência com isto em todo o projeto; se o usuário corrigir, atualize este arquivo)
+### Decisões assumidas (regras não 100% explícitas no texto original de regras do `README.md` — mantenha consistência com isto em todo o projeto; se o usuário corrigir, atualize este arquivo)
 
 1. **Esgotamento do Monte**: se uma compra precisar de mais cartas do que o Monte tem, embaralhe **todas** as cartas do Bolo (as viradas para cima e as viradas para baixo) formando um novo Monte, e continue a compra. O Bolo fica vazio depois disso.
 2. **Compra a partir do Bolo**: o Bolo é tratado como uma pilha (LIFO) — comprar do Bolo compra as N cartas do topo da pilha, na ordem em que foram colocadas, independentemente de estarem viradas para cima ou para baixo (a identidade de cartas viradas para cima já era pública; a de cartas viradas para baixo só é revelada ao jogador que compra).
-3. **Primeiro jogador da Partida**: sorteado aleatoriamente entre os 4 assentos quando a Partida começa (não especificado no `concept.md`).
+3. **Primeiro jogador da Partida**: sorteado aleatoriamente entre os 4 assentos quando a Partida começa (não especificado no texto original de regras do `README.md`).
 4. **Dono da Sala (host)**: o jogador que cria a Sala. Só ele pode iniciar a Partida, e apenas quando houver exatamente 4 jogadores presentes.
 5. **Compra insuficiente mesmo após esgotamento**: se, mesmo depois de aplicar as regras acima (reembaralhar o Bolo no Monte quando a origem é Monte; ou simplesmente o Bolo não ter cartas suficientes quando a origem é Bolo), ainda não houver cartas suficientes para completar a `quantidade` pedida, a compra entrega **o quanto houver disponível** (podendo ser até 0 cartas) e para silenciosamente — sem lançar erro. A camada de API decide o que fazer com uma mão que ficou abaixo de 8 cartas (normalmente nada: aguarda a próxima compra dar mais cartas ao jogador).
 
@@ -130,7 +130,7 @@ Carta é representada como um objeto `{ id, suit, rank }` (chips derivado de `ra
 
 ### Compra após a ação (fluxo em duas fases)
 
-Decisão de UX (não é uma regra do `concept.md`, é sobre *quando*, na interface, a origem é escolhida — o resultado final da jogada é o mesmo): jogar uma Mesa ou usar um Bolo acontece em **duas requisições**, não uma só, espelhando o padrão já usado pela Troca (`pending_swap`):
+Decisão de UX (não é uma regra do texto original de regras do `README.md`, é sobre *quando*, na interface, a origem é escolhida — o resultado final da jogada é o mesmo): jogar uma Mesa ou usar um Bolo acontece em **duas requisições**, não uma só, espelhando o padrão já usado pela Troca (`pending_swap`):
 
 1. **Jogar/descartar** (`POST .../meld` ou `POST .../discard`): aplica só o que já é decidido pela própria jogada — remove as cartas da mão, decrementa `melds_remaining`/`discards_remaining`, soma a pontuação (Mesa). **As cartas jogadas/descartadas AINDA NÃO vão para `games.discard` nesta etapa** — ficam guardadas apenas em `pending_draw.details` (`melded_cards`/`discarded_cards`). **Não compra cartas ainda** e **não avança o turno**. Em vez disso, grava `games.pending_draw = { seat, quantity, action_type, details }` (coluna jsonb nullable, mesmo padrão de `pending_swap`) e retorna imediatamente o resultado da jogada (ex.: `points_scored`/`combo` da Mesa) para a UI já poder mostrar a pontuação.
 2. **Escolher origem** (`POST /api/games/[gameId]/draw`, endpoint compartilhado entre Mesa e Bolo, body `{ source: 'deck'|'discard' }`): só o jogador de `pending_draw.seat` pode chamar. Valida se a origem escolhida tem cartas suficientes (Monte é válido a menos que `deck_count + discard.length < quantity`; Bolo só é válido se `discard.length >= quantity` — sem essa checagem o jogador poderia "escolher" uma origem vazia e ficar com a mão incompleta sem necessidade; note que `discard.length` aqui ainda NÃO inclui as cartas desta jogada, então o jogador nunca pode comprar de volta as cartas que acabou de jogar/descartar). Só então chama `drawCards` (usando o Bolo **sem** as cartas desta jogada) e, com o resultado já calculado, empilha `pending_draw.details.melded_cards`/`discarded_cards` no topo do Bolo resultante — só aí elas se tornam parte pública/comprável do Bolo. Atualiza a mão, limpa `pending_draw`, roda o checklist de fim-de-turno de `Turn.ts` (que por isso só acontece nesta segunda etapa) e grava a linha final em `game_actions`.

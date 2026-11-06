@@ -54,14 +54,15 @@ export function ChooseDrawSourceLogicComponent({ state, logicData }: {
   const deckHasEnough = (state.deck_count + state.discard.length) >= quantity;
 
   return (
-    <div className="flex flex-col items-center gap-2 bg-black/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-secondary-400/40">
-      <span className="text-white text-sm">
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+      <span className="text-gold text-sm font-bold">
         {`Escolha de onde comprar ${quantity} carta(s)`}
       </span>
 
       <div className="flex items-center gap-2">
         <FormButton
-          color="primary"
+          color="secondary"
+          radius={0}
           disabled={!deckHasEnough || chooseDrawSourceIsPending}
           loading={chooseDrawSourceIsPending && chooseDrawSourceVariables === EDrawSource.DECK}
           tooltip={!deckHasEnough ? 'O Monte e o Bolo juntos não têm cartas suficientes para esta compra' : undefined}
@@ -72,7 +73,9 @@ export function ChooseDrawSourceLogicComponent({ state, logicData }: {
         </FormButton>
 
         <FormButton
-          color="secondary"
+          variant="white"
+          color="dark"
+          radius={0}
           disabled={!discardHasEnough || chooseDrawSourceIsPending}
           loading={chooseDrawSourceIsPending && chooseDrawSourceVariables === EDrawSource.DISCARD}
           tooltip={!discardHasEnough ? 'O Bolo não tem cartas suficientes para esta compra' : undefined}

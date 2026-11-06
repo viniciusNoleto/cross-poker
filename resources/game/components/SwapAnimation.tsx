@@ -178,7 +178,7 @@ function SwapStrip({ actionId, prefix, quantity, origin, destination, perpendicu
             <Card
               card={null}
               size="md"
-              className={highlight ? 'ring-2 ring-secondary-400/70 shadow-[0_0_10px_rgba(212,175,55,0.6)]' : ''}
+              className={highlight ? 'outline-[3px] outline-gold' : ''}
             />
           </motion.div>
         );

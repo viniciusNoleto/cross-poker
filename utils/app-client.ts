@@ -1,3 +1,4 @@
+import { ofetch } from 'ofetch';
 import { ApiMessage } from '@/src/shared/types/api';
 
 export type AppApiResponse<T> = {
@@ -6,40 +7,41 @@ export type AppApiResponse<T> = {
   data: T;
 };
 
-async function request<T>(url: string, options?: RequestInit): Promise<AppApiResponse<T>> {
-  const res = await fetch(url, options);
-  const data: AppApiResponse<T> = await res.json();
-  if (!data.success) throw data;
-  return data;
+type Options = NonNullable<Parameters<typeof ofetch>[1]>
+
+async function request<T>(url: string, options?: Options): Promise<AppApiResponse<T>> {
+  return await ofetch<AppApiResponse<T>>(url, options)
 }
 
 export const appClient = {
-  get<T>(url: string, options?: { signal?: AbortSignal }): Promise<AppApiResponse<T>> {
-    return request<T>(url, { signal: options?.signal });
-  },
-  post<T>(url: string, options: { body: any; signal?: AbortSignal }): Promise<AppApiResponse<T>> {
+  get<T>(url: string, options?: Options): Promise<AppApiResponse<T>> {
     return request<T>(url, {
+      ...options,
+      method: 'GET',
+    });
+  },
+  post<T>(url: string, options: Options): Promise<AppApiResponse<T>> {
+    return request<T>(url, {
+      ...options,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(options.body),
-      signal: options.signal,
     });
   },
-  put<T>(url: string, options: { body: any }): Promise<AppApiResponse<T>> {
+  put<T>(url: string, options: Options): Promise<AppApiResponse<T>> {
     return request<T>(url, {
+      ...options,
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(options.body),
     });
   },
-  patch<T>(url: string, options: { body: any }): Promise<AppApiResponse<T>> {
+  patch<T>(url: string, options: Options): Promise<AppApiResponse<T>> {
     return request<T>(url, {
+      ...options,
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(options.body),
     });
   },
-  delete<T>(url: string): Promise<AppApiResponse<T>> {
-    return request<T>(url, { method: 'DELETE' });
+  delete<T>(url: string, options?: Options): Promise<AppApiResponse<T>> {
+    return request<T>(url, {
+      ...options,
+      method: 'DELETE'
+    });
   },
 };

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const COOKIE_PREFIX = 'cp_session_';
 
@@ -9,8 +9,12 @@ const MAX_AGE_SECONDS = 60 * 60 * 24;
 export async function setRoomSessionCookie(roomCode: string, token: string) {
   const store = await cookies();
 
+  // Atrás do Nginx Proxy Manager com SSL, o protocolo original chega em X-Forwarded-Proto.
+  const secure = (await headers()).get('x-forwarded-proto') === 'https';
+
   store.set(`${COOKIE_PREFIX}${roomCode}`, token, {
     httpOnly: true,
+    secure,
     sameSite: 'lax',
     path: '/',
     maxAge: MAX_AGE_SECONDS,
