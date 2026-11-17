@@ -13,7 +13,7 @@ export function usePlayDiscardLogicData({ gameId, onSuccess }: { gameId: number;
     onError: (err: any) => {
       notifications.show({
         title: 'Erro',
-        message: err?.message ? resolveApiMessage(err.message, 'pt-br') : 'Não foi possível jogar o Bolo. Tente novamente.',
+        message: err?.message ? resolveApiMessage(err.message, 'pt-br') : 'Não foi possível fazer o Descarte. Tente novamente.',
         color: 'red',
       });
     },
@@ -24,40 +24,28 @@ export function usePlayDiscardLogicData({ gameId, onSuccess }: { gameId: number;
   };
 }
 
-// `selectedCards`: ids of the cards from your own hand currently selected on the game page.
-// `canPlay`: whether it's the player's turn (`you.is_your_turn`) — the button is disabled otherwise.
-// The draw-source choice (Deck/Discard) happens AFTER this discard, in a separate step
-// — see `ChooseDrawSource.tsx` (game-concept.md, "Compra após a ação"). This button only submits the discard.
-export function PlayDiscardLogicComponent({ logicData, selectedCards, canPlay }: { logicData: ReturnType<typeof usePlayDiscardLogicData>; selectedCards: string[]; canPlay: boolean }) {
-  const {
-    playDiscardMutation: {
-      mutate: playDiscardMutate,
-      isPending: playDiscardIsPending,
-    },
-  } = logicData;
-
+// "Descarte" action button. Like the Jogada, clicking it only opens the draw-source choice
+// (`onChooseSource` → `DrawSourcePicker` on the page); discard + draw are then sent together in
+// one request (`playDiscardMutation.mutate({ cards, source })`). See game-concept.md,
+// "Compra junto com a ação".
+// `selectedCards`: ids of the selected hand cards. `canPlay`: your turn and no pending Swap.
+export function PlayDiscardLogicComponent({ selectedCards, canPlay, onChooseSource }: { selectedCards: string[]; canPlay: boolean; onChooseSource: () => void }) {
   const quantityValid = selectedCards.length >= 1 && selectedCards.length <= 5;
-
-  function playDiscard() {
-    if (!quantityValid || playDiscardIsPending || !canPlay) return;
-
-    playDiscardMutate({ cards: selectedCards });
-  }
 
   return (
     <FormButton
       variant="white"
       color="dark"
       size="md"
-      radius={0}
       className="min-w-[112px]"
       disabled={!canPlay || !quantityValid}
-      loading={playDiscardIsPending}
       tooltip={!canPlay ? 'Aguarde sua vez' : (!quantityValid ? 'Selecione de 1 a 5 cartas' : undefined)}
       rightIcon="lucide:trash-2"
-      onClick={playDiscard}
+      onClick={() => {
+        if (canPlay && quantityValid) onChooseSource();
+      }}
     >
-      Bolo
+      Descarte
     </FormButton>
   );
 }

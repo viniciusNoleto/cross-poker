@@ -1,13 +1,11 @@
-import { db } from '@/libs/db';
-import { games, gamePlayers } from '@/db/schema';
 import { getCurrentGamePlayer } from '@/libs/gameAuth';
 import { publish } from '@/libs/realtime';
+import { drawSourceError, resolveActionWithDraw } from '@/libs/actionDraw';
 import { cardById } from '@/resources/game/models/Card';
 import { bestCombo } from '@/resources/game/models/Combo';
-import { IPendingDraw } from '@/resources/game/models/PendingDraw';
 import { EGameStatus } from '@/resources/game/enums/EGameStatus';
 import { EActionType } from '@/resources/game/enums/EActionType';
-import { eq } from 'drizzle-orm';
+import { EDrawSource } from '@/resources/game/enums/EDrawSource';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request, { params }: { params: Promise<{ gameId: string }> }) {
@@ -16,7 +14,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
     const gameId = Number(gameIdParam);
 
     const body = await request.json();
-    const cards: string[] = Array.isArray(body.cards) ? body.cards : [];
+    const cards: string[] = Array.isArray(body?.cards) ? body.cards : [];
+    const source: unknown = body?.source;
 
     const { game, gamePlayer } = await getCurrentGamePlayer(gameId);
 
@@ -37,15 +36,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
     }
 
     if (game.pending_swap !== null) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Existe uma Troca pendente nesta partida.', 'es-mx': 'Hay un Cambio pendiente en esta partida.', 'en-us': 'There is a pending Swap in this game.' }, data: null }, { status: 409 });
-    }
-
-    if (game.pending_draw !== null) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Há uma compra pendente nesta partida. Aguarde a resolução antes de jogar.', 'es-mx': 'Hay una compra pendiente en esta partida. Espera a que se resuelva antes de jugar.', 'en-us': 'There is a pending draw in this game. Wait for it to be resolved before playing.' }, data: null }, { status: 409 });
+      return NextResponse.json({ success: false, message: { 'pt-br': 'Existe uma Troca pendente nesta partida.', 'es-mx': 'Hay un Intercambio pendiente en esta partida.', 'en-us': 'There is a pending Swap in this game.' }, data: null }, { status: 409 });
     }
 
     if (gamePlayer.melds_remaining <= 0) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Você não possui Mesas restantes.', 'es-mx': 'No te quedan Mesas disponibles.', 'en-us': 'You have no Table plays left.' }, data: null }, { status: 422 });
+      return NextResponse.json({ success: false, message: { 'pt-br': 'Você não possui Jogadas restantes.', 'es-mx': 'No te quedan Jugadas disponibles.', 'en-us': 'You have no Plays left.' }, data: null }, { status: 422 });
     }
 
     const hand = gamePlayer.hand as string[];
@@ -59,17 +54,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       return NextResponse.json({ success: false, message: { 'pt-br': 'Seleção de cartas inválida.', 'es-mx': 'Selección de cartas inválida.', 'en-us': 'Invalid card selection.' }, data: null }, { status: 422 });
     }
 
+    const sourceError = drawSourceError(game, source, cards.length);
+
+    if (sourceError) {
+      return NextResponse.json({ success: false, message: sourceError, data: null }, { status: 422 });
+    }
+
     const meldedCards = cards.map(cardById);
     const { type, scoringCards, chips, multiplier, points } = bestCombo(meldedCards);
 
-    const remainingHand = hand.filter((cardId) => !uniqueCards.has(cardId));
-    const newMeldsRemaining = gamePlayer.melds_remaining - 1;
-    const newScore = gamePlayer.score + points;
-
-    const pendingDraw: IPendingDraw = {
-      seat: gamePlayer.seat,
-      quantity: cards.length,
-      action_type: EActionType.MELD,
+    // Play + draw in a single step: the score only becomes visible (snapshot + `last_action`)
+    // once the draw source is chosen, so every player sees the score animation at the same time.
+    // See game-concept.md, "Compra junto com a ação".
+    await resolveActionWithDraw({
+      game,
+      gamePlayer,
+      actionType: EActionType.MELD,
+      cards,
+      source: source as `${EDrawSource}`,
+      playerChanges: {
+        melds_remaining: gamePlayer.melds_remaining - 1,
+        score: gamePlayer.score + points,
+      },
       details: {
         melded_cards: cards,
         combo: type,
@@ -78,35 +84,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
         multiplier,
         points,
       },
-    };
-
-    // The draw (Deck/Discard) only happens in the second step (`POST .../draw`) — see
-    // game-concept.md, "Compra após a ação". The played cards only enter the Discard pile once
-    // that step resolves, so the player can't draw from the Discard pile the very cards they
-    // just played in this same action. Here we only apply what the play itself already decided:
-    // remove from the hand, decrement Melds, add up the score.
-    await db.update(games).set({
-      pending_draw: pendingDraw,
-    }).where(eq(games.id, gameId));
-
-    await db.update(gamePlayers).set({
-      hand: remainingHand,
-      melds_remaining: newMeldsRemaining,
-      score: newScore,
-    }).where(eq(gamePlayers.id, gamePlayer.id));
+    });
 
     publish(`game:${gameId}`);
 
     return NextResponse.json({
       success: true,
-      message: { 'pt-br': 'Mesa jogada com sucesso.', 'es-mx': 'Mesa jugada con éxito.', 'en-us': 'Table played successfully.' },
-      data: {
-        points_scored: points, combo: type, melded_cards: meldedCards, scoring_cards: scoringCards, chips, multiplier,
-      },
+      message: { 'pt-br': 'Jogada realizada com sucesso.', 'es-mx': 'Jugada realizada con éxito.', 'en-us': 'Play completed successfully.' },
+      data: null,
     });
   } catch (e) {
     console.error(e);
 
-    return NextResponse.json({ success: false, message: { 'pt-br': 'Erro ao jogar a Mesa.', 'es-mx': 'Error al jugar la Mesa.', 'en-us': 'Error playing the Table.' }, data: null }, { status: 500 });
+    return NextResponse.json({ success: false, message: { 'pt-br': 'Erro ao realizar a Jogada.', 'es-mx': 'Error al realizar la Jugada.', 'en-us': 'Error making the Play.' }, data: null }, { status: 500 });
   }
 }

@@ -4,21 +4,18 @@ import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { FormButton } from '@/components/form/Button';
 import { resolveApiMessage } from '@/utils/apiMessage';
-import { playMeldService, PlayMeldServiceResponse } from '../services/playMeld';
+import { playMeldService, PlayMeldServicePayload } from '../services/playMeld';
 
-export function usePlayMeldLogicData({ gameId, onSuccess }: { gameId: number; onSuccess: (result: PlayMeldServiceResponse) => void }) {
+export function usePlayMeldLogicData({ gameId, onSuccess }: { gameId: number; onSuccess: () => void }) {
   const playMeldMutation = useMutation({
-    mutationFn: (cards: string[]) => playMeldService({
-      gameId,
-      body: { cards },
-    }),
-    onSuccess: (res) => {
-      onSuccess(res.data);
+    mutationFn: (payload: PlayMeldServicePayload) => playMeldService({ gameId, body: payload }),
+    onSuccess: () => {
+      onSuccess();
     },
     onError: (err: any) => {
       notifications.show({
         title: 'Erro',
-        message: err?.message ? resolveApiMessage(err.message, 'pt-br') : 'Não foi possível jogar a Mesa. Tente novamente.',
+        message: err?.message ? resolveApiMessage(err.message, 'pt-br') : 'Não foi possível fazer a Jogada. Tente novamente.',
         color: 'red',
       });
     },
@@ -30,58 +27,37 @@ export function usePlayMeldLogicData({ gameId, onSuccess }: { gameId: number; on
 }
 
 /**
- * "Play Meld" action — replaces the disabled `FormButton` "Jogar Mesa" in
- * `app/games/[gameId]/page.tsx`.
+ * "Jogada" (Meld) action button, used in `app/games/[gameId]/page.tsx`.
  *
- * Props:
- * - `logicData`: return of `usePlayMeldLogicData({ gameId, onSuccess })`. `onSuccess` receives the
- *   play result (`{ points_scored, combo, melded_cards, scoring_cards, chips,
- *   multiplier }`) — use it to clear the selection (e.g. `setSelectedCards([])`) and store the
- *   result in local state to display in `MeldScoreAnimationSelf` (see
- *   `resources/game/components/MeldScoreAnimationSelf.tsx`). The game snapshot is already
- *   refetched automatically via SSE after the play, no manual refetch needed.
- * - `selectedCards`: ids of the cards currently selected in the player's hand (the existing
- *   `selectedCards: string[]` state on the page) — must have between 1 and 5 items.
- * - `disabled`: pass the same condition used by the other action buttons (`!you?.is_your_turn`);
- *   the route also validates server-side (turn, Melds remaining, pending Swap/Draw, etc.).
+ * Clicking it does NOT send anything yet: it calls `onChooseSource`, and the page swaps the
+ * action buttons for `DrawSourcePicker` (`resources/game/components/DrawSourcePicker.tsx`). Only
+ * after the source is picked does the page call `playMeldMutation.mutate({ cards, source })` —
+ * play + draw in a single request, so the score (and its animation, via `last_action`) shows up
+ * for every player at the same time. See game-concept.md, "Compra junto com a ação".
  *
- * The draw-source choice (Deck/Discard) happens AFTER this play, in a separate step
- * — see `ChooseDrawSource.tsx` (game-concept.md, "Compra após a ação"). This button only submits
- * the play itself.
+ * - `selectedCards`: ids of the cards selected in the hand — 1 to 5.
+ * - `disabled`: not your turn / pending Swap; the route validates everything again server-side.
  */
-export function PlayMeldLogicComponent({ logicData, selectedCards, disabled }: {
-  logicData: ReturnType<typeof usePlayMeldLogicData>;
+export function PlayMeldLogicComponent({ selectedCards, disabled, onChooseSource }: {
   selectedCards: string[];
   disabled?: boolean;
+  onChooseSource: () => void;
 }) {
-  const {
-    playMeldMutation: {
-      mutate: playMeldMutate,
-      isPending: playMeldIsPending,
-    },
-  } = logicData;
-
   const canPlay = selectedCards.length >= 1 && selectedCards.length <= 5 && !disabled;
-
-  function playMeld() {
-    if (!canPlay) return;
-
-    playMeldMutate(selectedCards);
-  }
 
   return (
     <FormButton
       color="secondary"
       size="md"
-      radius={0}
       className="min-w-[112px]"
       disabled={!canPlay}
-      loading={playMeldIsPending}
       tooltip={selectedCards.length === 0 ? 'Selecione de 1 a 5 cartas' : undefined}
       rightIcon="lucide:hand"
-      onClick={playMeld}
+      onClick={() => {
+        if (canPlay) onChooseSource();
+      }}
     >
-      Mesa
+      Jogada
     </FormButton>
   );
 }

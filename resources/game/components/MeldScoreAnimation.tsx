@@ -7,6 +7,7 @@ import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
 import { ChipBurst } from './ChipBurst';
 import { chipsForCard } from '../models/Card';
+import { sounds } from '@/utils/sound';
 import { ECombo } from '../enums/ECombo';
 import type { ICard } from '../models/Card';
 
@@ -40,6 +41,7 @@ const HOP_DURATION_MS = 420;
 const INTERVAL_BETWEEN_CARDS_MS = 220;
 const MULTIPLIER_DURATION_MS = 450;
 const TOTAL_DURATION_MS = 850;
+const BIG_SCORE_POINTS = 500;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -64,8 +66,8 @@ export type Point = { x: number; y: number };
 
 export type MeldScoreAnimationProps = {
   combo: `${ECombo}`;
-  // All cards played in the Meld, in the order they were played — includes ones that don't
-  // score (see game-concept.md: "all played cards, scoring or not, go to the Discard pile").
+  // All cards played in the Jogada, in the order they were played — includes ones that don't
+  // score (see game-concept.md: "all played cards, scoring or not, go to the Bolo").
   meldedCards: ICard[];
   // Subset of `meldedCards` that makes up the combo — only these add up Chips.
   scoringCards: ICard[];
@@ -73,11 +75,13 @@ export type MeldScoreAnimationProps = {
   multiplier: number;
   points: number;
   // Point (px, relative to the board's center) from which the cards fly out — the seat position
-  // of whoever played. See `ORIGIN_BY_SEAT` in `MeldScoreAnimationObservers.tsx`
-  // and `MeldScoreAnimationSelf.tsx`.
+  // of whoever played. See `ORIGIN_BY_SEAT` in `MeldScoreAnimationLayer.tsx`.
   origin: Point;
-  // Optional label shown above the combo (e.g. the name of who played, in the observer view).
+  // Optional label shown above the combo (e.g. the name of who played).
   label?: string;
+  // Plays the slot-machine roulette (instead of the regular chip roll) on totals above
+  // BIG_SCORE_POINTS — only for the author of the Jogada.
+  bigScoreSound?: boolean;
   onFinish: () => void;
 };
 
@@ -93,7 +97,7 @@ export type MeldScoreAnimationProps = {
  * Always restarts whenever the play's data changes.
  */
 export function MeldScoreAnimation({
-  combo, meldedCards, scoringCards, chips, multiplier, points, origin, label, onFinish,
+  combo, meldedCards, scoringCards, chips, multiplier, points, origin, label, bigScoreSound, onFinish,
 }: MeldScoreAnimationProps) {
   const [{
     phase, cardsRevealed, chipsShown, pointsShown,
@@ -133,6 +137,8 @@ export function MeldScoreAnimation({
         if (cancelled) return;
 
         setState((s) => ({ ...s, phase: 'total' }));
+        if (bigScoreSound && points > BIG_SCORE_POINTS) sounds.roulette(TOTAL_DURATION_MS + 500);
+        else sounds.chipRoll();
 
         await animate(chips, points, {
           duration: TOTAL_DURATION_MS / 1000,
@@ -159,6 +165,7 @@ export function MeldScoreAnimation({
       }
 
       setState((s) => ({ ...s, cardsRevealed: index + 1 }));
+      sounds.chipTick(index);
 
       const target = accumulated + chipsForCard(card);
 
@@ -182,6 +189,11 @@ export function MeldScoreAnimation({
     // plays.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(INITIAL_STATE);
+
+    // Deferred a tick (and guarded by `cancelled`) so a StrictMode double-run doesn't play it twice.
+    wait(40).then(() => {
+      if (!cancelled) sounds.cardsPlayed(n);
+    });
 
     wait(totalFlightDurationMs).then(() => {
       if (cancelled) return undefined;

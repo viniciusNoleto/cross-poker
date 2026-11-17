@@ -1,6 +1,6 @@
 # Cross Poker
 
-Cross Poker is an online card game for four players (two teams of two), built with [Next.js](https://nextjs.org). It combines a traditional trick-based card game played in pairs with scoring mechanics inspired by [Balatro](https://store.steampowered.com/app/2379780/Balatro/) — melds are scored like poker hands, with chips and multipliers instead of a flat point count.
+Cross Poker is an online card game for four players (two teams of two), built with [Next.js](https://nextjs.org). It combines a traditional trick-based card game played in pairs with scoring mechanics inspired by [Balatro](https://store.steampowered.com/app/2379780/Balatro/) — plays are scored like poker hands, with chips and multipliers instead of a flat point count.
 
 ## Origin
 
@@ -11,9 +11,9 @@ It's also a personal learning project and a piece of my curriculum — a chance 
 ## How it works
 
 - 4 players, 2 teams, seated in opposite positions; turn order goes clockwise, naturally alternating teams.
-- On your turn you either play a **meld** (score a poker-style hand from your cards), use a **discard**, or **swap** cards secretly with your partner.
-- Melds are scored like Balatro hands (pair, flush, full house, straight flush, etc.) — chips from the scoring cards, multiplied by the hand's multiplier.
-- The match ends when no player has any melds left; the team with the higher combined score wins.
+- On your turn you either make a **play** (*jogada*: score a poker-style hand from your cards), use a **discard** (*descarte*), or **swap** cards secretly with your partner.
+- Plays are scored like Balatro hands (pair, flush, full house, straight flush, etc.) — chips from the scoring cards, multiplied by the hand's multiplier.
+- The match ends when no player has any plays left — or earlier, when only one team still has plays and it is already ahead. The team with the higher combined score wins.
 
 An implementation-oriented version of these rules (EN/PT vocabulary mapping, architecture decisions) lives in [`.claude/rules/game-concept.md`](./.claude/rules/game-concept.md).
 
@@ -24,45 +24,46 @@ An implementation-oriented version of these rules (EN/PT vocabulary mapping, arc
 
 ### Piles
 
-- **Deck (Monte)** — the pile of remaining cards after the initial deal.
-- **Discard (Bolo)** — the game's discard pile. It holds two kinds of cards: discarded cards, kept face-down, and cards played in a meld, kept face-up.
+- **Deck (Monte)** — the pile of remaining cards after the initial deal. You can draw from it.
+- **Played pile (Bolo)** — every card used in a play, kept face-up and visible to everyone. You can **not** draw from it; it only returns to the game when the Deck runs out (it is shuffled into a new Deck).
+- **Discard pile (Descarte)** — cards discarded with a discard action, kept face-down. You can draw from its top.
 
 ### Setup
 
 Each player starts with:
 
 - 8 cards in hand;
-- 5 melds;
+- 5 plays;
 - 5 discards.
 
 The rest of the deck becomes the draw pile.
 
 ### Turn flow
 
-On their turn, a player performs **exactly one** of the following actions: play a meld, or use a discard (a team swap can replace a discard action — see below). A player with no actions left (0 melds **and** 0 discards) is skipped in turn order.
+On their turn, a player performs **exactly one** of the following actions: make a play, or use a discard (a team swap can replace a discard action — see below). A player with no actions left (0 plays **and** 0 discards) is skipped in turn order.
 
-### Meld
+### Play (Jogada)
 
-A meld is a scoring play.
+A play is the scoring action.
 
-- Consumes 1 meld token.
+- Consumes 1 play token.
 - The player plays **1 to 5 cards** from their hand.
 - The game automatically finds the best valid combo among the played cards.
 - Only the cards that form that combo score; the rest are still played but don't score.
-- All played cards go to the discard pile face-up.
+- All played cards go to the played pile (Bolo) face-up.
 - After playing, the player draws back up to 8 cards in hand.
 
-### Discard
+### Discard (Descarte)
 
 A discard is a hand-management action.
 
 - Consumes 1 discard token.
-- The player discards **1 to 5 cards**, which go to the discard pile face-down.
+- The player discards **1 to 5 cards**, which go to the discard pile (Descarte) face-down.
 - The player then draws the same number of cards back.
 
 ### Drawing cards
 
-Whenever a player needs to draw, the draw must come from a single source — the deck **or** the discard pile, never mixed within the same draw.
+Whenever a player needs to draw, the draw must come from a single source — the Deck **or** the discard pile (Descarte), never mixed within the same draw. The played pile (Bolo) is never a draw source.
 
 ### Team swap
 
@@ -83,7 +84,7 @@ Combos that require exactly 5 cards: Straight, Flush, Full House, Straight Flush
 
 ### Scoring
 
-Scoring follows the Balatro system. For each meld:
+Scoring follows the Balatro system. For each play:
 
 1. Sum the chips of the cards that form the valid combo.
 2. Multiply by the combo's multiplier.
@@ -110,7 +111,7 @@ Cards played outside the combo don't score.
 
 ### End of match
 
-The match ends when no player has any melds left. A team's score is the sum of both partners' scores; the team with the higher score wins.
+The match ends when no player has any plays left. It also ends early as soon as only one team still has plays **and** that team is already ahead — the other team can no longer score, so the result can't change (the game screen warns about this while it can happen). A match with no action for more than 1 hour is closed automatically, with the score of that moment. A team's score is the sum of both partners' scores; the team with the higher score wins (equal totals are a tie).
 
 ## Tech Stack
 
@@ -124,6 +125,7 @@ The match ends when no player has any melds left. A team's score is the sum of b
 - [i18next](https://www.i18next.com) (internationalization)
 - [motion](https://motion.dev) (card animations)
 - Server-Sent Events for real-time sync (no WebSocket infra needed)
+- Web Audio API for the retro sound effects (synthesized at runtime, no audio files)
 
 ## Configuration & Deploy
 

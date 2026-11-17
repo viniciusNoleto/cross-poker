@@ -24,12 +24,25 @@ export const mantineTheme = createTheme({
   },
   defaultRadius: 'xs',
   components: {
+    ActionIcon: {
+      defaultProps: {
+        radius: 6,
+      },
+    },
+    SegmentedControl: {
+      defaultProps: {
+        radius: 6,
+      },
+    },
     Modal: {
       classNames: {
         title: 'text-2xl! font-display! font-medium! grow',
       },
     },
     Button: {
+      defaultProps: {
+        radius: 6,
+      },
       classNames: {
         root: 'font-bold! tracking-[0.01em] transition-transform active:translate-y-px',
       },

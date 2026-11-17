@@ -11,12 +11,7 @@ const FULL_HOUSE: ICard[] = [
   { id: 'clubs-9-1', suit: 'clubs', rank: '9' },
 ];
 
-const DISCARD_TOP: Array<ICard | null> = [
-  null,
-  { id: 'hearts-7-1', suit: 'hearts', rank: '7' },
-  null,
-  { id: 'spades-Q-1', suit: 'spades', rank: 'Q' },
-];
+const DISCARD_TOP: Array<ICard | null> = [null, null, null, null];
 
 const SEATS = [
   { name: 'Lia', note: 'anfitriã · dupla A' },
@@ -29,7 +24,7 @@ function MeldFragment() {
   return (
     <div
       data-ui
-      className="flex flex-col items-center gap-8 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10svh]"
+      className="flex flex-col items-center gap-8 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10dvh]"
     >
       <div className="flex items-end gap-2 sm:gap-3">
         <UtilsFor
@@ -69,7 +64,7 @@ function DiscardFragment() {
   return (
     <div
       data-ui
-      className="flex flex-col items-center gap-8 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10svh]"
+      className="flex flex-col items-center gap-8 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10dvh]"
     >
       <div className="flex items-center gap-10">
         <div className="flex flex-col items-center gap-2">
@@ -108,7 +103,7 @@ function DiscardFragment() {
           </div>
 
           <span className="text-[0.9375rem] tabular">
-            Bolo · 6
+            Descarte · 6
           </span>
         </div>
       </div>
@@ -124,7 +119,7 @@ function DiscardFragment() {
           </span>
 
           <span className="bg-paper text-ink font-bold text-center py-3 text-[0.9375rem]">
-            Do Bolo
+            Do Descarte
           </span>
         </div>
       </div>
@@ -136,7 +131,7 @@ function SwapFragment() {
   return (
     <div
       data-ui
-      className="flex flex-col items-center gap-6 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10svh]"
+      className="flex flex-col items-center gap-6 bg-felt text-paper w-full h-full justify-start px-6 pt-12 pb-10 md:pt-[10dvh]"
     >
       <div className="flex flex-col items-center gap-3">
         <span className="text-[1rem]">
@@ -200,7 +195,7 @@ function RoomFragment() {
   return (
     <div
       data-ui
-      className="flex flex-col gap-6 bg-paper text-ink w-full h-full justify-start px-7 pt-12 pb-10 md:pt-[10svh]"
+      className="flex flex-col gap-6 bg-paper text-ink w-full h-full justify-start px-7 pt-12 pb-10 md:pt-[10dvh]"
     >
       <div className="flex flex-col gap-1">
         <span className="text-[1rem] text-ink-soft">
@@ -240,23 +235,23 @@ function RoomFragment() {
 
 const SHEETS = [
   {
-    id: 'mesa-jogada',
-    name: 'Mesa',
-    text: 'Jogue de uma a cinco cartas. O jogo acha a melhor combinação entre elas e só as cartas da combinação pontuam. As outras vão junto para o Bolo, viradas para cima. Cada jogador tem cinco Mesas por partida.',
+    id: 'jogada',
+    name: 'Jogada',
+    text: 'Jogue de uma a cinco cartas. O jogo acha a melhor combinação entre elas e só as cartas da combinação pontuam. Todas vão para o Bolo, viradas para cima, à vista de todos. Cada jogador tem cinco Jogadas por partida.',
     className: 'bg-gold text-gold-ink',
     Fragment: MeldFragment,
   },
   {
-    id: 'bolo',
-    name: 'Bolo',
-    text: 'Descarte de uma a cinco cartas viradas para baixo e compre a mesma quantidade, do Monte ou do topo do Bolo. Quem compra do Bolo leva o que os outros jogaram, e só ele vê as cartas que estavam viradas.',
+    id: 'descarte',
+    name: 'Descarte',
+    text: 'Descarte de uma a cinco cartas viradas para baixo e compre a mesma quantidade, do Monte ou do topo do Descarte. Quem compra do Descarte leva o que os outros descartaram, e só ele vê essas cartas.',
     className: 'bg-paper text-ink',
     Fragment: DiscardFragment,
   },
   {
     id: 'troca',
     name: 'Troca',
-    text: 'No lugar de um Bolo, combine uma troca com o seu parceiro. Os dois escolhem as cartas em segredo, a troca acontece ao mesmo tempo e a outra dupla só fica sabendo que ela aconteceu.',
+    text: 'No lugar de um Descarte, combine uma troca com o seu parceiro. Os dois escolhem as cartas em segredo, a troca acontece ao mesmo tempo e a outra dupla só fica sabendo que ela aconteceu.',
     className: 'bg-suit-red text-paper',
     Fragment: SwapFragment,
   },
@@ -282,7 +277,7 @@ export function HomeActions() {
           data-reveal
           className="font-display font-normal text-[clamp(2.5rem,1.4rem+3.6vw,4.5rem)] leading-[0.95] tracking-[-0.02em]"
         >
-          Três jogadas e uma sala
+          Três ações e uma sala
         </h2>
       </div>
 
@@ -294,7 +289,7 @@ export function HomeActions() {
           {({ item: sheet, index }) => (
             <article
               id={sheet.id}
-              className={`sheet ${sheet.className} grid grid-cols-1 md:grid-cols-12 md:min-h-[86svh] min-h-[70svh]`}
+              className={`sheet ${sheet.className} grid grid-cols-1 md:grid-cols-12 md:min-h-[86dvh] min-h-[70dvh]`}
               style={{ '--sheet-index': index } as React.CSSProperties}
               aria-labelledby={`${sheet.id}-titulo`}
             >

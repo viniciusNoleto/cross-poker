@@ -137,9 +137,9 @@ export function HomeCombos() {
     >
       <div
         ref={wrapperRef}
-        className="hidden lg:block h-[260svh]"
+        className="hidden lg:block h-[260dvh]"
       >
-        <div className="sticky top-0 h-[100svh] home-frame flex flex-col justify-center gap-10 overflow-hidden">
+        <div className="sticky top-0 h-dvh home-frame flex flex-col justify-center gap-10 overflow-hidden">
           <div className="flex items-end justify-between gap-10">
             <h2
               id="maos-titulo"

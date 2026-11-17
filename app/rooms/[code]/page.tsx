@@ -14,6 +14,7 @@ import { useServerSentEvent } from '@/utils/hooks';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { getRoomService, GET_ROOM_KEY } from '@/resources/room/services/getRoom';
 import { startRoomService } from '@/resources/room/services/startRoom';
+import { ERoomStatus } from '@/resources/room/enums/ERoomStatus';
 
 const TOTAL_SEATS = 4;
 
@@ -37,7 +38,10 @@ export default function RoomPage() {
   const you = state?.you;
 
   useEffect(() => {
-    if (state?.room.status === 'playing' && state.game_id) {
+    // A finished room still leads to its game, which now shows the result screen.
+    const roomStatus = state?.room.status;
+
+    if ((roomStatus === ERoomStatus.PLAYING || roomStatus === ERoomStatus.FINISHED) && state?.game_id) {
       router.push(`/games/${state.game_id}`);
     }
   }, [state?.room.status, state?.game_id, router]);
@@ -75,7 +79,7 @@ export default function RoomPage() {
   ];
 
   return (
-    <main className="felt-surface relative flex flex-1 flex-col min-h-[100svh] px-4 md:px-8 pb-12">
+    <main className="felt-surface relative flex flex-1 flex-col min-h-dvh px-4 md:px-8 pb-12">
       <header className="flex items-center justify-between gap-4 pt-5 md:pt-7">
         <Link
           href="/"
@@ -112,7 +116,7 @@ export default function RoomPage() {
           <button
             type="button"
             onClick={copyCode}
-            className="group self-start flex items-center gap-5 bg-paper text-ink pl-6 pr-5 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-px"
+            className="group self-start flex items-center gap-5 rounded-md bg-paper text-ink pl-6 pr-5 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-px"
             aria-label={`Copiar código da sala ${roomCode}`}
           >
             <span className="font-display text-[clamp(2.5rem,1.8rem+2.4vw,3.5rem)] leading-none tracking-[0.14em] tabular">
@@ -139,7 +143,6 @@ export default function RoomPage() {
                     <FormButton
                       color="secondary"
                       size="lg"
-                      radius={0}
                       disabled={players.length < TOTAL_SEATS}
                       loading={startGameIsPending}
                       onClick={() => startGame()}

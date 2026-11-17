@@ -8,6 +8,7 @@ import { COMBO_NAME } from '@/resources/game/components/MeldScoreAnimation';
 import { bestCombo } from '@/resources/game/models/Combo';
 import type { ICard } from '@/resources/game/models/Card';
 import { ChipBurst } from '@/resources/game/components/ChipBurst';
+import { sounds } from '@/utils/sound';
 
 const SYMBOL: Record<string, string> = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
 
@@ -86,10 +87,14 @@ export function HomeSlotReels() {
   useEffect(() => {
     if (!running) return undefined;
 
+    // Reel ticks slowing down until the last reel lands (silent until the visitor interacts with
+    // the page — browsers block audio before that — or when sounds are muted).
+    const spinSound = window.setTimeout(() => sounds.roulette(SPIN_MS + REEL_GAP_MS * 2), 0);
     const settle = window.setTimeout(() => setSettledCycle(cycle), SPIN_MS + REEL_GAP_MS * 2 + 120);
     const next = window.setTimeout(() => setCycle((value) => value + 1), CYCLE_MS);
 
     return () => {
+      window.clearTimeout(spinSound);
       window.clearTimeout(settle);
       window.clearTimeout(next);
     };

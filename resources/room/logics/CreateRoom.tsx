@@ -72,7 +72,6 @@ export function CreateRoomLogicComponent({ logicData }: { logicData: ReturnType<
         type="submit"
         color="primary"
         size="lg"
-        radius={0}
         loading={createRoomIsPending}
         rightIcon="lucide:sparkles"
       >

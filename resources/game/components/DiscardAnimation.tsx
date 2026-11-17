@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useMediaQuery } from '@mantine/hooks';
+import { sounds } from '@/utils/sound';
 import { nFor, UtilsFor } from '@/components/utils/For';
 import { Card } from './Card';
 import { useAnimatedLastAction } from '../hooks/useAnimatedLastAction';
@@ -12,8 +14,9 @@ import type { IGameState } from '../models/GameState';
 // your partner always at the top, opponents on the sides, relative to whoever is viewing the screen.
 const SEAT_POSITIONS = ['bottom', 'left', 'top', 'right'] as const;
 
-// Offset (in px, from the board's center — where the Discard pile sits) of where each card
-// "flies out from", based on the relative seat position of whoever discarded.
+// Offset (in px, from the board's center) of where each card "flies out from", based on the
+// relative seat position of whoever discarded. Cards land on the Descarte pile, to the right of
+// the Bolo (see the center row in `page.tsx`: Monte · Bolo · Descarte).
 const ORIGIN_BY_SEAT: Record<(typeof SEAT_POSITIONS)[number], { x: number; y: number }> = {
   bottom: { x: 0, y: 210 },
   left: { x: -260, y: 0 },
@@ -24,6 +27,9 @@ const ORIGIN_BY_SEAT: Record<(typeof SEAT_POSITIONS)[number], { x: number; y: nu
 // Small delay before the first card leaves — suggests "discard first, then draw" without
 // depending on the draw animation (an independent visual layer, played by another agent).
 const INITIAL_DELAY_MS = 220;
+
+// Horizontal distance (px) from the board's center to the Descarte pile.
+const DISCARD_PILE_X = { narrow: 80, wide: 108 };
 const STAGGER_MS = 90;
 const DURATION_PER_CARD_MS = 500;
 
@@ -34,6 +40,8 @@ export type DiscardAnimationProps = {
 export function DiscardAnimation({ state }: DiscardAnimationProps) {
   const { newAction, clear } = useAnimatedLastAction(state.last_action);
   const you = state.you;
+  const narrow = useMediaQuery('(max-width: 767px)');
+  const pileX = narrow ? DISCARD_PILE_X.narrow : DISCARD_PILE_X.wide;
 
   const discardedCount = newAction?.discarded_count ?? 0;
   const firing = !!you && newAction?.type === EActionType.DISCARD && discardedCount > 0;
@@ -44,8 +52,12 @@ export function DiscardAnimation({ state }: DiscardAnimationProps) {
     const totalDurationMs = INITIAL_DELAY_MS + Math.max(0, discardedCount - 1) * STAGGER_MS + DURATION_PER_CARD_MS;
 
     const timer = setTimeout(() => clear(), totalDurationMs);
+    const soundTimer = setTimeout(() => sounds.cardsPlayed(discardedCount), INITIAL_DELAY_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(soundTimer);
+    };
   }, [firing, discardedCount, clear]);
 
   // Only compute the animated content when there's actually a new Discard action to show — keeps
@@ -81,7 +93,7 @@ export function DiscardAnimation({ state }: DiscardAnimationProps) {
                 scale: 0.85,
               }}
               animate={{
-                x: (index - middle) * 3,
+                x: pileX + (index - middle) * 3,
                 y: -index * 1.5,
                 opacity: 1,
                 rotate: (index - middle) * 2,

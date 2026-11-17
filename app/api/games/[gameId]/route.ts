@@ -3,8 +3,9 @@ import { roomPlayers, roomPlayerPublicColumns, gamePlayers, gameActions } from '
 import { getCurrentGamePlayer } from '@/libs/gameAuth';
 import { cardById } from '@/resources/game/models/Card';
 import { teamForSeat } from '@/resources/game/models/Team';
-import { IGameState, IDiscardCard, IPublicPendingSwap, IPublicPendingDraw, IPublicLastAction } from '@/resources/game/models/GameState';
+import { IGameState, IPublicPendingSwap, IPublicLastAction } from '@/resources/game/models/GameState';
 import { EActionType } from '@/resources/game/enums/EActionType';
+import { EGameStatus } from '@/resources/game/enums/EGameStatus';
 import { desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
@@ -46,11 +47,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ gam
       };
     });
 
-    const discard: IDiscardCard[] = (game.discard as Array<{ card_id: string; face_up: boolean }>).map((entry) => ({
-      card: entry.face_up ? cardById(entry.card_id) : null,
-      face_up: entry.face_up,
-    }));
-
     const pendingSwapRow = game.pending_swap as { initiator_seat: number; partner_seat: number; quantity: number; initiator_cards: string[] | null; partner_cards: string[] | null } | null;
 
     const pendingSwap: IPublicPendingSwap | null = pendingSwapRow ? {
@@ -61,24 +57,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ gam
       partner_ready: pendingSwapRow.partner_cards !== null,
     } : null;
 
-    const pendingDrawRow = game.pending_draw as { seat: number; quantity: number } | null;
-
-    const pendingDraw: IPublicPendingDraw | null = pendingDrawRow ? {
-      seat: pendingDrawRow.seat,
-      quantity: pendingDrawRow.quantity,
-    } : null;
-
     const you: IGameState['you'] = gamePlayer && roomPlayer ? {
       seat: gamePlayer.seat,
       hand: (gamePlayer.hand as string[]).map(cardById),
       melds_remaining: gamePlayer.melds_remaining,
       discards_remaining: gamePlayer.discards_remaining,
-      is_your_turn: game.current_seat === gamePlayer.seat,
+      is_your_turn: game.status === EGameStatus.PLAYING && game.current_seat === gamePlayer.seat,
       needs_to_choose_swap: !!pendingSwapRow && (
         (pendingSwapRow.initiator_seat === gamePlayer.seat && pendingSwapRow.initiator_cards === null)
         || (pendingSwapRow.partner_seat === gamePlayer.seat && pendingSwapRow.partner_cards === null)
       ),
-      needs_to_choose_draw: !!pendingDrawRow && pendingDrawRow.seat === gamePlayer.seat,
     } : null;
 
     const [lastActionRow] = await db
@@ -139,11 +127,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ gam
       status: game.status as IGameState['status'],
       current_seat: game.current_seat,
       winning_team: game.winning_team as IGameState['winning_team'],
+      finish_reason: game.finish_reason as IGameState['finish_reason'],
+      finished_at: game.finished_at ? game.finished_at.toISOString() : null,
       deck_count: (game.deck as string[]).length,
-      discard,
+      discard_count: (game.discard as string[]).length,
+      meld_pile: (game.meld_pile as string[]).map(cardById),
       players,
       pending_swap: pendingSwap,
-      pending_draw: pendingDraw,
       last_action: lastAction,
       you,
     };

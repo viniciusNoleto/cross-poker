@@ -211,7 +211,6 @@ export function ComboHelpButton() {
       <FormButton
         variant="subtle"
         color="gray.0"
-        radius={0}
         leftIcon="lucide:circle-help"
         tooltip="Como pontuar"
         onClick={() => setOpened(true)}

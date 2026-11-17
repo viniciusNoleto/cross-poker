@@ -1,25 +1,32 @@
 import { EDrawSource } from '../enums/EDrawSource';
 import { shuffle } from './Deck';
 
-export type IDiscardPileEntry = { card_id: string; face_up: boolean };
-
-// Shared card-draw structure, used by the Meld and Discard actions (never an independent turn
-// action on its own — see game-concept.md, section "Compra de Cartas"). Pure function:
-// no DB access, just transforms the received arrays and returns the new pile state.
+// Shared card-draw structure, used by the Jogada (Meld) and Descarte (Discard) actions (never an
+// independent turn action on its own — see game-concept.md, "Compra"). Pure function: no DB
+// access, just transforms the received arrays and returns the new pile state.
+//
+// The three piles (all card ids, order = bottom→top, top = last element — use .pop()):
+// - `deck` (Monte): drawable.
+// - `discard` (Descarte): face-down discarded cards, drawable (LIFO).
+// - `meldPile` (Bolo): face-up cards from Jogadas. NEVER drawable directly — it is only shuffled
+//   back into a new Monte when the Monte runs out mid-draw.
 export function drawCards(params: {
-  deck: string[]; // card ids, order = bottom→top (top = last element — use .pop())
-  discard: IDiscardPileEntry[]; // order = bottom→top (top = last element — use .pop())
+  deck: string[];
+  discard: string[];
+  meldPile: string[];
   quantity: number;
   source: `${EDrawSource}`;
 }): {
   drawnCards: string[];
   newDeck: string[];
-  newDiscard: IDiscardPileEntry[];
+  newDiscard: string[];
+  newMeldPile: string[];
 } {
   const { quantity, source } = params;
 
   let deck = [...params.deck];
-  let discard = [...params.discard];
+  const discard = [...params.discard];
+  let meldPile = [...params.meldPile];
   const drawnCards: string[] = [];
 
   if (source === EDrawSource.DISCARD) {
@@ -28,20 +35,20 @@ export function drawCards(params: {
 
       if (!card) break;
 
-      drawnCards.push(card.card_id);
+      drawnCards.push(card);
     }
 
-    return { drawnCards, newDeck: deck, newDiscard: discard };
+    return { drawnCards, newDeck: deck, newDiscard: discard, newMeldPile: meldPile };
   }
 
   for (let i = 0; i < quantity; i++) {
     if (deck.length === 0) {
-      if (discard.length === 0) break;
+      if (meldPile.length === 0) break;
 
-      // Deck exhaustion: shuffle all Discard cards (face up and face down, discarding the
-      // face_up info) into a new Deck. The Discard pile becomes empty.
-      deck = shuffle(discard.map((card) => card.card_id));
-      discard = [];
+      // Monte exhaustion: shuffle the whole Bolo into a new Monte. The Bolo becomes empty; the
+      // Descarte is left alone (it stays a drawable pile on its own).
+      deck = shuffle(meldPile);
+      meldPile = [];
     }
 
     const card = deck.pop();
@@ -51,5 +58,22 @@ export function drawCards(params: {
     drawnCards.push(card);
   }
 
-  return { drawnCards, newDeck: deck, newDiscard: discard };
+  return { drawnCards, newDeck: deck, newDiscard: discard, newMeldPile: meldPile };
+}
+
+// Whether each draw source can be chosen for a draw of `quantity` cards — same rule on the
+// server (`libs/actionDraw.ts`, used by `POST .../meld` and `.../discard`) and on the client
+// (`DrawSourcePicker.tsx`). The Descarte only counts
+// if it alone has enough cards. The Monte counts with the Bolo behind it (reshuffle); if neither
+// source has enough, the Monte is still allowed and delivers whatever exists (decision 5).
+export function drawSourceAvailability({ deckCount, discardCount, meldPileCount, quantity }: {
+  deckCount: number;
+  discardCount: number;
+  meldPileCount: number;
+  quantity: number;
+}) {
+  const discard = discardCount >= quantity;
+  const deck = (deckCount + meldPileCount) >= quantity || !discard;
+
+  return { deck, discard };
 }

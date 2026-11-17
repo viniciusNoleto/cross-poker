@@ -1,11 +1,9 @@
-import { db } from '@/libs/db';
-import { games, gamePlayers } from '@/db/schema';
 import { getCurrentGamePlayer } from '@/libs/gameAuth';
 import { publish } from '@/libs/realtime';
-import { IPendingDraw } from '@/resources/game/models/PendingDraw';
+import { drawSourceError, resolveActionWithDraw } from '@/libs/actionDraw';
 import { EGameStatus } from '@/resources/game/enums/EGameStatus';
 import { EActionType } from '@/resources/game/enums/EActionType';
-import { eq } from 'drizzle-orm';
+import { EDrawSource } from '@/resources/game/enums/EDrawSource';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request, { params }: { params: Promise<{ gameId: string }> }) {
@@ -14,6 +12,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
     const gameId = Number(gameIdParam);
     const body = await request.json();
     const cards: string[] = Array.isArray(body?.cards) ? body.cards : [];
+    const source: unknown = body?.source;
 
     const { game, gamePlayer } = await getCurrentGamePlayer(gameId);
 
@@ -34,15 +33,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
     }
 
     if (game.pending_swap !== null) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Há uma Troca pendente nesta partida. Aguarde a resolução antes de jogar.', 'es-mx': 'Hay un Troca pendiente en esta partida. Espera a que se resuelva antes de jugar.', 'en-us': 'There is a pending Troca in this game. Wait for it to be resolved before playing.' }, data: null }, { status: 409 });
-    }
-
-    if (game.pending_draw !== null) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Há uma compra pendente nesta partida. Aguarde a resolução antes de jogar.', 'es-mx': 'Hay una compra pendiente en esta partida. Espera a que se resuelva antes de jugar.', 'en-us': 'There is a pending draw in this game. Wait for it to be resolved before playing.' }, data: null }, { status: 409 });
+      return NextResponse.json({ success: false, message: { 'pt-br': 'Há uma Troca pendente nesta partida. Aguarde a resolução antes de jogar.', 'es-mx': 'Hay un Intercambio pendiente en esta partida. Espera a que se resuelva antes de jugar.', 'en-us': 'There is a pending Swap in this game. Wait for it to be resolved before playing.' }, data: null }, { status: 409 });
     }
 
     if (gamePlayer.discards_remaining <= 0) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Você não possui mais Bolos disponíveis.', 'es-mx': 'Ya no tienes Bolos disponibles.', 'en-us': 'You have no Bolos left.' }, data: null }, { status: 422 });
+      return NextResponse.json({ success: false, message: { 'pt-br': 'Você não possui mais Descartes disponíveis.', 'es-mx': 'Ya no tienes Descartes disponibles.', 'en-us': 'You have no Discards left.' }, data: null }, { status: 422 });
     }
 
     const currentHand = gamePlayer.hand as string[];
@@ -56,39 +51,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       return NextResponse.json({ success: false, message: { 'pt-br': 'Uma ou mais cartas selecionadas não estão na sua mão.', 'es-mx': 'Una o más cartas seleccionadas no están en tu mano.', 'en-us': 'One or more selected cards are not in your hand.' }, data: null }, { status: 422 });
     }
 
-    const handWithoutDiscard = currentHand.filter((cardId) => !cards.includes(cardId));
-    const newDiscardsRemaining = gamePlayer.discards_remaining - 1;
+    const sourceError = drawSourceError(game, source, cards.length);
 
-    const pendingDraw: IPendingDraw = {
-      seat: gamePlayer.seat,
-      quantity: cards.length,
-      action_type: EActionType.DISCARD,
+    if (sourceError) {
+      return NextResponse.json({ success: false, message: sourceError, data: null }, { status: 422 });
+    }
+
+    // Discard + draw in a single step — see game-concept.md, "Compra junto com a ação".
+    await resolveActionWithDraw({
+      game,
+      gamePlayer,
+      actionType: EActionType.DISCARD,
+      cards,
+      source: source as `${EDrawSource}`,
+      playerChanges: { discards_remaining: gamePlayer.discards_remaining - 1 },
       details: { discarded_cards: cards },
-    };
-
-    // The draw (Deck/Discard) only happens in the second step (`POST .../draw`) — see
-    // game-concept.md, "Compra após a ação". The discarded cards only enter the Discard pile
-    // once that step resolves, so the player can't draw from the Discard pile the very cards
-    // they just discarded in this same action. Here we only apply what the play itself already
-    // decided: remove from the hand, decrement Discards.
-    await db.update(gamePlayers)
-      .set({ hand: handWithoutDiscard, discards_remaining: newDiscardsRemaining })
-      .where(eq(gamePlayers.id, gamePlayer.id));
-
-    await db.update(games)
-      .set({ pending_draw: pendingDraw })
-      .where(eq(games.id, gameId));
+    });
 
     publish(`game:${gameId}`);
 
     return NextResponse.json({
       success: true,
-      message: { 'pt-br': 'Bolo jogado com sucesso.', 'es-mx': 'Bolo jugado con éxito.', 'en-us': 'Bolo played successfully.' },
+      message: { 'pt-br': 'Descarte realizado com sucesso.', 'es-mx': 'Descarte realizado con éxito.', 'en-us': 'Discard completed successfully.' },
       data: null,
     });
   } catch (e) {
     console.error(e);
 
-    return NextResponse.json({ success: false, message: { 'pt-br': 'Erro ao jogar o Bolo.', 'es-mx': 'Error al jugar el Bolo.', 'en-us': 'Error playing the Bolo.' }, data: null }, { status: 500 });
+    return NextResponse.json({ success: false, message: { 'pt-br': 'Erro ao realizar o Descarte.', 'es-mx': 'Error al realizar el Descarte.', 'en-us': 'Error making the Discard.' }, data: null }, { status: 500 });
   }
 }

@@ -61,6 +61,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ co
       current_seat: currentSeat,
       deck: remainingDeck,
       discard: [],
+      meld_pile: [],
+      last_action_at: now,
       created_at: now,
     }).returning();
 

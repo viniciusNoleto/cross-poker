@@ -87,7 +87,6 @@ export function JoinRoomLogicComponent({ logicData }: { logicData: ReturnType<ty
         type="submit"
         color="secondary"
         size="lg"
-        radius={0}
         loading={joinRoomIsPending}
         rightIcon="lucide:log-in"
       >

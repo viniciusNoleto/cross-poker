@@ -14,6 +14,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Service worker do PWA: nunca cachear o próprio sw.js, senão as atualizações
+        // demoram a chegar aos jogadores.
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self'",
+          },
+        ],
+      },
     ];
   },
 };

@@ -25,10 +25,12 @@ const DESTINATION_POINT: Record<(typeof SEAT_POSITIONS)[number], { topPct: numbe
   right: { topPct: 50, leftPct: 96 },
 };
 
-// Deck sits to the left of center, Discard to the right (see the center row layout in `page.tsx`).
-const ORIGIN_POINT: Record<`${EDrawSource}`, { topPct: number; leftPct: number }> = {
-  [EDrawSource.DECK]: { topPct: 50, leftPct: 42 },
-  [EDrawSource.DISCARD]: { topPct: 50, leftPct: 58 },
+// Center row in `page.tsx`: Monte · Bolo · Descarte. Horizontal distance (px) from the board's
+// center to the Monte (left) and the Descarte (right) — the Bolo, in the middle, is never drawn from.
+const PILE_OFFSET_X = { narrow: 80, wide: 108 };
+const ORIGIN_SIDE: Record<`${EDrawSource}`, -1 | 1> = {
+  [EDrawSource.DECK]: -1,
+  [EDrawSource.DISCARD]: 1,
 };
 
 // "md" size of `<Card />` (see components/Card.tsx, `SIZES.md`: w-12 h-16).
@@ -55,7 +57,7 @@ type Flight = {
 /**
  * Animates `drawn_count` cards leaving the Deck/Discard (board center) to the hand of the
  * player who drew, at the correct relative position for EACH observer — see game-concept.md,
- * "Compra após a ação" and "Feed de última ação". Must be mounted inside the relative
+ * "Compra junto com a ação" and "Feed de última ação". Must be mounted inside the relative
  * container wrapping the 4 seats (`app/games/[gameId]/page.tsx`), as an absolute overlay.
  *
  * When `newAction.seat` is you, `drawn_cards` comes filled in and the real cards are shown
@@ -90,7 +92,11 @@ export function DrawAnimation({ state }: { state: IGameState }) {
 
     const relative = (newAction.seat - you.seat + 4) % 4;
     const destinationPoint = DESTINATION_POINT[SEAT_POSITIONS[relative]];
-    const originPoint = ORIGIN_POINT[newAction.draw_source];
+    const pileOffset = width < 768 ? PILE_OFFSET_X.narrow : PILE_OFFSET_X.wide;
+    const originPixels: Point = {
+      x: width / 2 + ORIGIN_SIDE[newAction.draw_source] * pileOffset - CARD_WIDTH / 2,
+      y: height / 2 - CARD_HEIGHT / 2,
+    };
 
     function toPixels({ topPct, leftPct }: { topPct: number; leftPct: number }): Point {
       return {
@@ -103,7 +109,7 @@ export function DrawAnimation({ state }: { state: IGameState }) {
     const realCards = isYou ? newAction.drawn_cards ?? [] : [];
 
     setFlight({
-      origin: toPixels(originPoint),
+      origin: originPixels,
       destination: toPixels(destinationPoint),
       cards: Array.from({ length: quantity }).map((_, index) => ({
         key: `${newAction.id}-${index}`,

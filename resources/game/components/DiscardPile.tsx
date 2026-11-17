@@ -1,85 +1,47 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Modal } from '@mantine/core';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
-import type { IDiscardCard } from '../models/GameState';
 
 export type DiscardPileProps = {
-  discard: IDiscardCard[];
+  count: number;
 };
 
-export function DiscardPile({ discard }: DiscardPileProps) {
-  const [opened, setOpened] = useState(false);
-
-  // `discard` comes in bottom→top order (top = last element, see Draw.ts). The modal lists in
-  // draw order: top first, since that's the next card to be drawn from there.
-  const discardInDrawOrder = useMemo(() => [...discard].reverse(), [discard]);
+/**
+ * The Descarte: cards discarded face down. Only the count is public. It is a draw source
+ * (top cards first), alongside the Monte.
+ */
+export function DiscardPile({ count }: DiscardPileProps) {
+  const visible = Math.min(count, 3);
 
   return (
-    <>
-      <div
-        className="flex flex-col items-center gap-1.5 cursor-zoom-in"
-        onMouseEnter={() => {
-          if (discard.length) setOpened(true);
-        }}
-      >
-        <div className="flex -space-x-8">
-          <UtilsFor
-            each={discard.slice(-4)}
-            eachKey={({ index }) => index}
-          >
-            {({ item }) => (
-              <Card card={item.card} />
-            )}
-          </UtilsFor>
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative w-12 h-[67px]">
+        <UtilsFor
+          each={Array.from({ length: visible })}
+          eachKey={({ index }) => index}
+        >
+          {({ index }) => (
+            <div
+              className="absolute top-0 left-0"
+              style={{ transform: `translate(${(visible - 1 - index) * 2}px, ${(visible - 1 - index) * 2}px) rotate(${(index - 1) * 4}deg)` }}
+            >
+              <Card card={null} />
+            </div>
+          )}
+        </UtilsFor>
 
-          <UtilsIf condition={!discard.length}>
-            {() => (
-              <div className="w-12 h-[67px] rounded-[6px] border-2 border-dashed border-paper/25" />
-            )}
-          </UtilsIf>
-        </div>
-
-        <span className="text-paper/85 text-[13px] tabular">
-          {`Bolo (${discard.length})`}
-        </span>
+        <UtilsIf condition={!count}>
+          {() => (
+            <div className="w-12 h-[67px] rounded-[6px] border-2 border-dashed border-paper/25" />
+          )}
+        </UtilsIf>
       </div>
 
-      <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title="Bolo"
-        size="xl"
-        centered
-      >
-        <div
-          onMouseLeave={() => setOpened(false)}
-          className="flex flex-wrap gap-2 min-h-16 overflow-y-auto p-4"
-        >
-          <UtilsIf condition={!discard.length}>
-            {() => (
-              <span className="text-gray-400 text-xs">
-                Bolo vazio
-              </span>
-            )}
-          </UtilsIf>
-
-          <UtilsFor
-            each={discardInDrawOrder}
-            eachKey={({ index }) => index}
-          >
-            {({ item }) => (
-              <Card
-                card={item.card}
-                size="lg"
-              />
-            )}
-          </UtilsFor>
-        </div>
-      </Modal>
-    </>
+      <span className="text-paper/85 text-[13px] tabular">
+        {`Descarte (${count})`}
+      </span>
+    </div>
   );
 }

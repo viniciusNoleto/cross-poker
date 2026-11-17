@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback ?? (
-        <div className="flex flex-col items-center justify-center h-screen gap-4 text-gray-500">
+        <div className="flex flex-col items-center justify-center h-dvh gap-4 text-gray-500">
           <p className="text-lg font-semibold">
             {i18n.t('errorBoundary.title')}
           </p>

@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import { sounds } from '@/utils/sound';
 import { UtilsFor } from '@/components/utils/For';
 import { ETeam } from '../enums/ETeam';
 import { CHIP_COLORS, StackedChip } from './PokerChip';
@@ -76,6 +78,23 @@ function TeamScore({
   swatch: string;
   align: 'left' | 'right';
 }) {
+  const previousTotalRef = useRef(total);
+
+  // Chips falling on the team's tower: one clack per new chip (at least one whenever the total
+  // goes up), timed with the spring drop. Skipped on the first render.
+  useEffect(() => {
+    const previous = previousTotalRef.current;
+
+    previousTotalRef.current = total;
+
+    if (total <= previous) return undefined;
+
+    const count = Math.max(1, chipsForTotal(total) - chipsForTotal(previous));
+    const timer = setTimeout(() => sounds.chipDrop(count), 120);
+
+    return () => clearTimeout(timer);
+  }, [total]);
+
   return (
     <div className={`flex flex-col gap-1 min-w-0 ${align === 'right' ? 'items-end text-right' : 'items-start'}`}>
       <span className={`flex items-center gap-2 text-[12px] md:text-[13px] text-paper/85 whitespace-nowrap ${align === 'right' ? 'flex-row-reverse' : ''}`}>

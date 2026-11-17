@@ -1,21 +1,13 @@
 import { appClient } from '@/utils/app-client';
 import { PayloadBody } from '@/shared/types/api';
-import { ECombo } from '../enums/ECombo';
-import type { ICard } from '../models/Card';
+import { EDrawSource } from '../enums/EDrawSource';
 
 export type PlayMeldServicePayload = {
   cards: string[];
-};
-
-export type PlayMeldServiceResponse = {
-  points_scored: number;
-  combo: `${ECombo}`;
-  melded_cards: ICard[];
-  scoring_cards: ICard[];
-  chips: number;
-  multiplier: number;
+  // Where the replacement cards come from — chosen together with the play (single step).
+  source: `${EDrawSource}`;
 };
 
 export function playMeldService({ gameId, body }: PayloadBody<PlayMeldServicePayload> & { gameId: number }) {
-  return appClient.post<PlayMeldServiceResponse>(`/api/games/${gameId}/meld`, { body });
+  return appClient.post<null>(`/api/games/${gameId}/meld`, { body });
 }

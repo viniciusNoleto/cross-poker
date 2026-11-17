@@ -1,12 +1,18 @@
-import type { Metadata } from 'next';
-import { ColorSchemeScript } from '@mantine/core';
+import type { Metadata, Viewport } from 'next';
+import { mantineHtmlProps } from '@mantine/core';
 import { Providers } from './providers';
+import { UtilsServiceWorker } from '@/components/utils/ServiceWorker';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Cross Poker',
   description: 'Poker em duplas, pontuado com fichas e multiplicadores. Junte três amigos e jogue no navegador, sem cadastro.',
-  manifest: '/site.webmanifest',
+  applicationName: 'Cross Poker',
+  appleWebApp: {
+    capable: true,
+    title: 'Cross Poker',
+    statusBarStyle: 'black',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -16,6 +22,11 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#061f16',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -28,11 +39,9 @@ export default function RootLayout({
       lang="pt-BR"
       data-scroll-behavior="smooth"
       className="h-full antialiased"
-      suppressHydrationWarning
+      {...mantineHtmlProps}
     >
       <head>
-        <ColorSchemeScript defaultColorScheme="light" />
-
         <link
           rel="preconnect"
           href="https://api.fontshare.com"
@@ -50,7 +59,9 @@ export default function RootLayout({
         />
       </head>
 
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-dvh flex flex-col">
+        <UtilsServiceWorker />
+
         <Providers>
           {children}
         </Providers>

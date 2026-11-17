@@ -12,28 +12,31 @@ const SLIP: SlipGroup[] = [
     rows: [
       { what: 'Duplas sentadas frente a frente', value: '4 lugares' },
       { what: 'Cartas na mão de cada um', value: '8' },
-      { what: 'Mesas e Bolos de cada um', value: '5 e 5' },
+      { what: 'Jogadas e Descartes de cada um', value: '5 e 5' },
     ],
   },
   {
-    heading: 'Na sua vez, uma jogada',
+    heading: 'Na sua vez, uma ação',
     rows: [
-      { what: 'Mesa: jogar de 1 a 5 cartas e pontuar', value: '1 Mesa' },
-      { what: 'Bolo: descartar de 1 a 5 e repor', value: '1 Bolo' },
-      { what: 'Troca: passar cartas ao parceiro', value: '1 Bolo cada' },
+      { what: 'Jogada: jogar de 1 a 5 cartas e pontuar', value: '1 Jogada' },
+      { what: 'Descarte: descartar de 1 a 5 e repor', value: '1 Descarte' },
+      { what: 'Troca: passar cartas ao parceiro', value: '1 Descarte cada' },
     ],
   },
   {
-    heading: 'Depois da jogada',
+    heading: 'Depois da ação',
     rows: [
-      { what: 'Comprar do Monte ou do Bolo, nunca dos dois', value: 'até 8' },
-      { what: 'Quem não tem Mesa nem Bolo passa a vez', value: 'pula' },
+      { what: 'Comprar do Monte ou do Descarte, nunca dos dois', value: 'até 8' },
+      { what: 'Cartas jogadas vão para o Bolo, que não se compra', value: 'à vista' },
+      { what: 'Quem não tem Jogada nem Descarte passa a vez', value: 'pula' },
     ],
   },
   {
     heading: 'Fim',
     rows: [
-      { what: 'Ninguém mais tem Mesas', value: 'acabou' },
+      { what: 'Ninguém mais tem Jogadas', value: 'acabou' },
+      { what: 'Só uma dupla tem Jogadas e já está na frente', value: 'acabou' },
+      { what: 'Mais de 1 hora sem ninguém jogar', value: 'encerrada' },
     ],
   },
 ];
@@ -60,7 +63,7 @@ export function HomeHowItWorks() {
             style={{ '--i': 1 } as React.CSSProperties}
             className="text-[1.1875rem] leading-[1.55] max-w-[34ch]"
           >
-            Um baralho, quatro amigos, duas duplas. A vez gira no sentido horário, então as duplas se alternam sozinhas. Cada um gasta suas Mesas e seus Bolos até não sobrar Mesa na mesa.
+            Um baralho, quatro amigos, duas duplas. A vez gira no sentido horário, então as duplas se alternam sozinhas. Cada um gasta suas Jogadas e seus Descartes até não sobrar Jogada na mesa.
           </p>
 
           <div

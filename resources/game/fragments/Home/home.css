@@ -96,6 +96,7 @@
   font-weight: 700;
   font-size: 1.0625rem;
   letter-spacing: 0.005em;
+  border-radius: 6px;
   transition: transform 0.18s var(--ease-deal), background-color 0.18s ease;
 }
 

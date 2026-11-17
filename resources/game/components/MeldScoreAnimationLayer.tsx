@@ -8,8 +8,7 @@ import type { Point } from './MeldScoreAnimation';
 import type { IGameState } from '../models/GameState';
 
 // Same relative-position mapping used in `app/games/[gameId]/page.tsx` and the other
-// animation layers (`DiscardAnimation.tsx`, `SwapAnimation.tsx`) — repeated here because
-// this component can't import from `page.tsx` nor edit it (see game-concept.md, "Animações").
+// animation layers (`DiscardAnimation.tsx`, `SwapAnimation.tsx`).
 const SEAT_POSITIONS = ['bottom', 'left', 'top', 'right'] as const;
 
 // Same offsets used in `DiscardAnimation.tsx`/`SwapAnimation.tsx`, so the played cards fly
@@ -21,19 +20,20 @@ const ORIGIN_BY_SEAT: Record<(typeof SEAT_POSITIONS)[number], Point> = {
   right: { x: 260, y: 0 },
 };
 
-export type MeldScoreAnimationObserversProps = {
+export type MeldScoreAnimationLayerProps = {
   state: IGameState;
+  // Called with the `last_action.id` once its score count finished playing — the page holds the
+  // Jogada's points out of the scoreboard until then (see `displayedPlayers` in the game page).
+  onScoreCounted?: (actionId: number) => void;
 };
 
 /**
- * View for the OTHER players when someone plays a Meld: reuses the same
- * `MeldScoreAnimation` engine, fed by `last_action` (always public for Meld plays —
- * see game-concept.md, "Feed de última ação"). The author of the play already sees the result
- * faster via `MeldScoreAnimationSelf.tsx` (direct return of `POST .../meld`), so this layer
- * ignores itself when `newAction.seat` is you — but the visual shown is the SAME engine, with
- * the SAME behavior, for both cases.
+ * Meld score animation for EVERY player, the author included, fed only by `last_action`
+ * (always public for Jogadas — see game-concept.md, "Feed de última ação"). A Jogada and its
+ * draw are a single request, so `last_action` only appears once the play is complete — and
+ * reaches everyone through the same SSE event, so all four players see the count together.
  */
-export function MeldScoreAnimationObservers({ state }: MeldScoreAnimationObserversProps) {
+export function MeldScoreAnimationLayer({ state, onScoreCounted }: MeldScoreAnimationLayerProps) {
   const { newAction, clear } = useAnimatedLastAction(state.last_action);
   const you = state.you;
 
@@ -41,7 +41,6 @@ export function MeldScoreAnimationObservers({ state }: MeldScoreAnimationObserve
 
   const firing = !!newAction
     && !!you
-    && newAction.seat !== you.seat
     && newAction.type === EActionType.MELD
     && !!newAction.combo
     && !!newAction.melded_cards
@@ -50,8 +49,15 @@ export function MeldScoreAnimationObservers({ state }: MeldScoreAnimationObserve
     && typeof newAction.multiplier === 'number'
     && typeof newAction.points === 'number';
 
+  const isYou = firing && newAction!.seat === you!.seat;
   const relative = firing ? (newAction!.seat - you!.seat + 4) % 4 : 0;
   const origin = ORIGIN_BY_SEAT[SEAT_POSITIONS[relative]];
+
+  function finish() {
+    if (newAction) onScoreCounted?.(newAction.id);
+
+    clear();
+  }
 
   return (
     <UtilsIf condition={firing}>
@@ -64,8 +70,9 @@ export function MeldScoreAnimationObservers({ state }: MeldScoreAnimationObserve
           multiplier={newAction!.multiplier!}
           points={newAction!.points!}
           origin={origin}
-          label={player?.name}
-          onFinish={clear}
+          label={isYou ? undefined : player?.name}
+          bigScoreSound={isYou}
+          onFinish={finish}
         />
       )}
     </UtilsIf>

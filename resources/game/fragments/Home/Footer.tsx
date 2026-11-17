@@ -9,7 +9,7 @@ const LINKS = [
 
 export function HomeFooter() {
   return (
-    <footer className="curtain-footer felt-surface text-paper home-frame min-h-[90svh] flex flex-col justify-between pt-10 pb-8 gap-16">
+    <footer className="curtain-footer felt-surface text-paper home-frame min-h-[90dvh] flex flex-col justify-between pt-10 pb-8 gap-16">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 text-[0.9375rem]">
         <div className="flex flex-col md:flex-row gap-3 md:gap-12 max-w-[60ch]">
           <p>

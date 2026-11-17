@@ -2,9 +2,9 @@ import { db } from '@/libs/db';
 import { gameActions, gamePlayers, games } from '@/db/schema';
 import { getCurrentGamePlayer } from '@/libs/gameAuth';
 import { publish } from '@/libs/realtime';
-import { EGameStatus } from '@/resources/game/enums/EGameStatus';
 import { EActionType } from '@/resources/game/enums/EActionType';
-import { winningTeam, gameShouldEnd, nextSeatWithAction } from '@/resources/game/models/Turn';
+import { gameEndReason, nextSeatWithAction } from '@/resources/game/models/Turn';
+import { finishGame } from '@/libs/gameFinish';
 import { IPendingSwap } from '@/resources/game/models/Swap';
 import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
@@ -92,7 +92,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       const bothChose = updated.initiator_cards !== null && updated.partner_cards !== null;
 
       if (!bothChose) {
-        await tx.update(games).set({ pending_swap: updated }).where(eq(games.id, gameId));
+        await tx.update(games).set({ pending_swap: updated, last_action_at: new Date() }).where(eq(games.id, gameId));
 
         return { kind: 'waiting-for-partner' };
       }
@@ -131,33 +131,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
         return player;
       });
 
-      const updateGamePayload: {
-        pending_swap: null;
-        status?: string;
-        winning_team?: string;
-        current_seat?: number;
-        finished_at?: Date;
-      } = { pending_swap: null };
+      const now = new Date();
 
-      if (gameShouldEnd(updatedPlayers)) {
-        updateGamePayload.status = EGameStatus.FINISHED;
-        updateGamePayload.winning_team = winningTeam(updatedPlayers);
-        updateGamePayload.finished_at = new Date();
-      } else {
-        updateGamePayload.current_seat = nextSeatWithAction(freshGame.current_seat, updatedPlayers) ?? freshGame.current_seat;
-      }
-
-      await tx.update(games).set(updateGamePayload).where(eq(games.id, gameId));
-
-      // Never store the swapped cards' ids — the `game_actions` history may one day be read by
-      // all players (animations), including opponents (game-concept.md).
+      // Never store the swapped cards' ids — the `game_actions` history is read by all players
+      // (animations), including opponents (game-concept.md).
       await tx.insert(gameActions).values({
         game_id: gameId,
         seat: updated.initiator_seat,
         type: EActionType.SWAP,
         payload: { partner_seat: updated.partner_seat, quantity: updated.quantity },
-        created_at: new Date(),
+        created_at: now,
       });
+
+      const endReason = gameEndReason(updatedPlayers);
+
+      if (endReason) {
+        await finishGame(tx, { gameId, roomId: freshGame.room_id, players: updatedPlayers, reason: endReason });
+      } else {
+        await tx.update(games).set({
+          pending_swap: null,
+          last_action_at: now,
+          current_seat: nextSeatWithAction(freshGame.current_seat, updatedPlayers) ?? freshGame.current_seat,
+        }).where(eq(games.id, gameId));
+      }
 
       return { kind: 'completed' };
     });

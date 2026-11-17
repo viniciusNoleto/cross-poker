@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCreateRoomLogicData } from '@/resources/room/logics/CreateRoom';
 import { useJoinRoomLogicData } from '@/resources/room/logics/JoinRoom';
@@ -9,13 +10,15 @@ import { HomeHowItWorks } from '@/resources/game/fragments/Home/HowItWorks';
 import { HomeActions } from '@/resources/game/fragments/Home/Actions';
 import { HomeCombos } from '@/resources/game/fragments/Home/Combos';
 import { HomeOrigin } from '@/resources/game/fragments/Home/Origin';
-import { HomeJoin } from '@/resources/game/fragments/Home/Join';
+import { HomeJoin, type JoinMode } from '@/resources/game/fragments/Home/Join';
 import { HomeFooter } from '@/resources/game/fragments/Home/Footer';
 import { useReveal } from '@/resources/game/fragments/Home/useReveal';
 import '@/resources/game/fragments/Home/home.css';
 
 export default function Home() {
   const router = useRouter();
+
+  const [joinMode, setJoinMode] = useState<JoinMode>('create');
 
   const createRoomLogicData = useCreateRoomLogicData({
     onSuccess: (state) => router.push(`/rooms/${state.room.code}`),
@@ -30,7 +33,7 @@ export default function Home() {
   return (
     <div className="flex-1 bg-felt-night">
       <main className="curtain-main bg-felt-night">
-        <HomeHero />
+        <HomeHero onChooseJoinMode={setJoinMode} />
 
         <HomeLiveMeld />
 
@@ -43,6 +46,8 @@ export default function Home() {
         <HomeOrigin />
 
         <HomeJoin
+          mode={joinMode}
+          setMode={setJoinMode}
           createRoomLogicData={createRoomLogicData}
           joinRoomLogicData={joinRoomLogicData}
         />

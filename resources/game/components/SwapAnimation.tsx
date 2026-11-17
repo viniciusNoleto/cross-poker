@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { UtilsFor, nFor } from '@/components/utils/For';
 import { Card } from './Card';
 import { useAnimatedLastAction } from '../hooks/useAnimatedLastAction';
+import { sounds } from '@/utils/sound';
 import { EActionType } from '../enums/EActionType';
 import type { IGameState } from '../models/GameState';
 
@@ -58,6 +59,8 @@ export function SwapAnimation({ state }: SwapAnimationProps) {
 
     const quantity = newAction.swap_quantity ?? 0;
     const totalDurationMs = DURATION_MS + Math.max(0, quantity - 1) * STAGGER_MS + 100;
+
+    sounds.swapCardsFly(quantity, DURATION_MS, STAGGER_MS);
 
     const timer = setTimeout(() => clear(), totalDurationMs);
 

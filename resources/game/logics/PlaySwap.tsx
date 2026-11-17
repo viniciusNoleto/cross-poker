@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
+import { sounds } from '@/utils/sound';
 import { FormButton } from '@/components/form/Button';
 import { FormNumberInput } from '@/components/form/Number';
 import { UtilsIf } from '@/components/utils/If';
+import { nFor, UtilsFor } from '@/components/utils/For';
+import { Form } from '@/components/form/Form';
+import { Modal } from '@mantine/core';
+import { Icon } from '@iconify/react';
+import { motion } from 'motion/react';
+import { Card } from '../components/Card';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { startSwapService } from '../services/startSwap';
 import { chooseSwapService } from '../services/chooseSwap';
@@ -22,6 +29,7 @@ export function useStartSwapLogicData({ gameId, onSuccess }: { gameId: number; o
   const startSwapMutation = useMutation({
     mutationFn: () => startSwapService({ gameId, body: { quantity: startSwapQuantity } }),
     onSuccess: () => {
+      sounds.swapDeal();
       setStartSwapOpen(false);
       setStartSwapQuantity(MIN_QUANTITY);
 
@@ -45,7 +53,38 @@ export function useStartSwapLogicData({ gameId, onSuccess }: { gameId: number; o
   };
 }
 
-export function StartSwapLogicComponent({ logicData, disabled }: { logicData: ReturnType<typeof useStartSwapLogicData>; disabled: boolean }) {
+// Face-down cards representing how many cards one side of the Swap is giving. All MAX_QUANTITY
+// slots are always mounted and only the first `quantity` are shown, so each card pops in / out as
+// the quantity changes and the number in the input reads as a physical pile of cards.
+function SwapQuantityCards({ quantity, owner }: { quantity: number; owner: 'you' | 'partner' }) {
+  const offsetY = owner === 'partner' ? -24 : 24;
+
+  return (
+    <div className="flex items-center justify-center min-h-[95px]">
+      <UtilsFor each={nFor(MAX_QUANTITY)}>
+        {({ item }) => (
+          <motion.div
+            initial={false}
+            animate={item < quantity
+              ? { width: 'auto', opacity: 1, y: 0, scale: 1, rotate: (item - (quantity - 1) / 2) * 4 }
+              : { width: 0, opacity: 0, y: offsetY, scale: 0.6, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+            className="flex justify-center"
+          >
+            <div className="px-1">
+              <Card
+                card={null}
+                size="lg"
+              />
+            </div>
+          </motion.div>
+        )}
+      </UtilsFor>
+    </div>
+  );
+}
+
+export function StartSwapLogicComponent({ logicData, disabled, partnerName }: { logicData: ReturnType<typeof useStartSwapLogicData>; disabled: boolean; partnerName?: string }) {
   const {
     startSwapOpen,
     setStartSwapOpen,
@@ -57,70 +96,133 @@ export function StartSwapLogicComponent({ logicData, disabled }: { logicData: Re
     },
   } = logicData;
 
+  function closeStartSwap() {
+    if (startSwapIsPending) return;
+
+    setStartSwapOpen(false);
+    setStartSwapQuantity(MIN_QUANTITY);
+  }
+
+  function changeStartSwapQuantity(value: number) {
+    const quantity = Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, Number(value) || MIN_QUANTITY));
+
+    if (quantity > startSwapQuantity) sounds.swapCardAppear(quantity);
+    else if (quantity < startSwapQuantity) sounds.swapCardVanish(quantity);
+
+    setStartSwapQuantity(quantity);
+  }
+
   return (
-    <UtilsIf
-      cases={[
-        {
-          condition: startSwapOpen,
-          content: () => (
-            <div className="flex items-center gap-2 bg-felt-night px-3 py-1.5">
-              <span className="text-paper text-sm whitespace-nowrap">
-                Trocar quantas cartas?
-              </span>
+    <>
+      <FormButton
+        variant="filled"
+        color="tertiary"
+        size="md"
+        className="min-w-[112px]"
+        disabled={disabled}
+        rightIcon="lucide:repeat"
+        onClick={() => {
+          sounds.chooseSwap();
+          setStartSwapOpen(true);
+        }}
+      >
+        Troca
+      </FormButton>
+
+      {/* Same look as the Bolo modal: felt with the wooden rim. Partner's cards on top, the
+          quantity in the middle, your cards at the bottom — both sides give the same amount. */}
+      <Modal
+        opened={startSwapOpen}
+        onClose={closeStartSwap}
+        title="Troca"
+        size="lg"
+        radius={24}
+        centered
+        withCloseButton={false}
+        classNames={{
+          content: 'felt-surface border-[10px] md:border-[14px] border-[#3a2414] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]',
+          header: 'bg-transparent! justify-center pt-5! pb-0!',
+          title: 'font-display italic text-gold text-[26px] leading-none',
+          body: 'pb-6!',
+        }}
+      >
+        <Form
+          onSubmit={() => startSwap()}
+          className="flex flex-col items-center gap-4 pt-2"
+        >
+          <span className="text-paper/70 text-xs uppercase tracking-[0.12em]">
+            {partnerName ? `${partnerName} entrega` : 'Seu aliado entrega'}
+          </span>
+
+          <SwapQuantityCards
+            quantity={startSwapQuantity}
+            owner="partner"
+          />
+
+          <div className="flex flex-col items-center gap-2 py-1">
+            <div className="flex items-center gap-3">
+              <Icon
+                icon="lucide:arrow-up-down"
+                className="w-5 h-5 text-gold"
+              />
 
               <FormNumberInput
                 value={startSwapQuantity}
-                onChange={(value) => setStartSwapQuantity(Math.min(MAX_QUANTITY, Math.max(MIN_QUANTITY, Number(value) || MIN_QUANTITY)))}
+                onChange={changeStartSwapQuantity}
                 min={MIN_QUANTITY}
                 max={MAX_QUANTITY}
-                size="sm"
-                radius={0}
-                className="w-16"
+                clampBehavior="strict"
+                allowDecimal={false}
+                size="md"
+                radius={6}
+                className="w-24"
+                classNames={{ input: 'text-center! font-display! text-xl! font-medium!' }}
                 disabled={startSwapIsPending}
+                data-autofocus
               />
 
-              <FormButton
-                size="sm"
-                radius={0}
-                variant="subtle"
-                color="gray.0"
-                disabled={startSwapIsPending}
-                onClick={() => setStartSwapOpen(false)}
-              >
-                Cancelar
-              </FormButton>
-
-              <FormButton
-                size="sm"
-                radius={0}
-                color="tertiary"
-                loading={startSwapIsPending}
-                rightIcon="lucide:repeat"
-                onClick={() => startSwap()}
-              >
-                Confirmar
-              </FormButton>
+              <Icon
+                icon="lucide:arrow-up-down"
+                className="w-5 h-5 text-gold"
+              />
             </div>
-          ),
-        },
-        {
-          content: () => (
+
+            <span className="text-paper/85 text-sm text-center">
+              {`Cada um escolhe ${startSwapQuantity} carta(s) em segredo para trocar.`}
+            </span>
+          </div>
+
+          <SwapQuantityCards
+            quantity={startSwapQuantity}
+            owner="you"
+          />
+
+          <span className="text-paper/70 text-xs uppercase tracking-[0.12em]">
+            Você entrega
+          </span>
+
+          <div className="flex items-center justify-center gap-2 pt-2">
             <FormButton
-              variant="filled"
-              color="tertiary"
-              size="md"
-              radius={0}
-              className="min-w-[112px]"
-              disabled={disabled}
-              rightIcon="lucide:repeat"
-              onClick={() => setStartSwapOpen(true)}
+              variant="subtle"
+              color="gray.0"
+              disabled={startSwapIsPending}
+              onClick={closeStartSwap}
             >
-              Troca
+              Cancelar
             </FormButton>
-          ),
-        },
-      ]}
-    />
+
+            <FormButton
+              type="submit"
+              color="tertiary"
+              loading={startSwapIsPending}
+              rightIcon="lucide:repeat"
+            >
+              Confirmar
+            </FormButton>
+          </div>
+        </Form>
+      </Modal>
+    </>
   );
 }
 
@@ -131,6 +233,8 @@ export function useChooseSwapLogicData({ gameId, onSuccess }: { gameId: number; 
   const chooseSwapMutation = useMutation({
     mutationFn: (cards: string[]) => chooseSwapService({ gameId, body: { cards } }),
     onSuccess: (res) => {
+      sounds.swapDeal();
+
       onSuccess();
 
       notifications.show({
@@ -205,7 +309,6 @@ export function ChooseSwapLogicComponent({ state, selectedCards, setSelectedCard
 
                 <FormButton
                   color="secondary"
-                  radius={0}
                   loading={chooseSwapIsPending}
                   disabled={selectedCards.length !== pendingSwap.quantity}
                   rightIcon="lucide:repeat"

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { motion, useReducedMotion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
 import { Card, CrossLogo } from '@/resources/game/components/Card';
+import { SoundToggle } from '@/resources/game/components/SoundToggle';
 
 const NAV_LINKS = [
   { href: '#mesa', label: 'Pontuação' },
@@ -47,11 +48,11 @@ function DealtHand({ side, reduce }: { side: 'left' | 'right'; reduce: boolean }
   );
 }
 
-export function HomeHero() {
+export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'create' | 'join') => void }) {
   const reduce = !!useReducedMotion();
 
   return (
-    <header className="felt-surface relative overflow-hidden flex flex-col min-h-[100svh] md:min-h-0 md:h-[max(100svh,840px)]">
+    <header className="felt-surface relative overflow-hidden flex flex-col min-h-dvh md:min-h-0 md:h-[max(100dvh,840px)]">
       <nav
         className="home-frame relative z-20 flex items-center justify-between gap-6 pt-5 md:pt-7"
         aria-label="Principal"
@@ -90,12 +91,16 @@ export function HomeHero() {
           </UtilsFor>
         </div>
 
-        <a
-          href="#jogar"
-          className="home-button bg-gold text-gold-ink hover:bg-[#f6c65a] min-h-11! px-5!"
-        >
-          Jogar agora
-        </a>
+        <div className="flex items-center gap-2">
+          <SoundToggle />
+
+          <a
+            href="#jogar"
+            className="home-button bg-gold text-gold-ink hover:bg-[#f6c65a] min-h-11! px-5!"
+          >
+            Jogar agora
+          </a>
+        </div>
       </nav>
 
       <DealtHand
@@ -114,7 +119,7 @@ export function HomeHero() {
         style={{ perspective: 1600 }}
       >
         <motion.div
-          className="relative w-full max-w-[640px] self-start min-h-[calc(100svh-96px)] md:min-h-0 md:aspect-[5/7] -mb-12 md:mb-0"
+          className="relative w-full max-w-[640px] self-start min-h-[calc(100dvh-96px)] md:min-h-0 md:aspect-[5/7] -mb-12 md:mb-0"
           style={{ transformStyle: 'preserve-3d' }}
           initial={reduce ? false : { rotateY: 180, y: 120, rotate: -4 }}
           animate={{ rotateY: 0, y: 0, rotate: 0 }}
@@ -129,7 +134,7 @@ export function HomeHero() {
           </div>
 
           <div
-            className="hero-card relative md:absolute md:inset-0 min-h-[calc(100svh-96px)] md:min-h-0 bg-paper text-ink flex flex-col items-center text-center px-5 md:px-14 pt-12 md:pt-16 pb-24 md:pb-0"
+            className="hero-card relative md:absolute md:inset-0 min-h-[calc(100dvh-96px)] md:min-h-0 bg-paper text-ink flex flex-col items-center text-center px-5 md:px-14 pt-12 md:pt-16 pb-24 md:pb-0"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <span
@@ -197,6 +202,7 @@ export function HomeHero() {
             <div className="mt-9 flex flex-col sm:flex-row items-center gap-5">
               <a
                 href="#jogar"
+                onClick={() => onChooseJoinMode('create')}
                 className="home-button bg-ink text-paper hover:bg-felt-deep"
               >
                 Criar uma sala
@@ -204,6 +210,7 @@ export function HomeHero() {
 
               <a
                 href="#jogar"
+                onClick={() => onChooseJoinMode('join')}
                 className="home-link text-[1.0625rem] text-ink decoration-ink/30"
               >
                 Já tenho um código

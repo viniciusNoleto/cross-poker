@@ -1,23 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import { SegmentedControl } from '@mantine/core';
 import { UtilsIf } from '@/components/utils/If';
 import { CreateRoomLogicComponent, useCreateRoomLogicData } from '@/resources/room/logics/CreateRoom';
 import { JoinRoomLogicComponent, useJoinRoomLogicData } from '@/resources/room/logics/JoinRoom';
 
-type JoinMode = 'create' | 'join';
+export type JoinMode = 'create' | 'join';
 
-export function HomeJoin({ createRoomLogicData, joinRoomLogicData }: {
+export function HomeJoin({ mode, setMode, createRoomLogicData, joinRoomLogicData }: {
+  mode: JoinMode;
+  setMode: (mode: JoinMode) => void;
   createRoomLogicData: ReturnType<typeof useCreateRoomLogicData>;
   joinRoomLogicData: ReturnType<typeof useJoinRoomLogicData>;
 }) {
-  const [mode, setMode] = useState<JoinMode>('create');
 
   return (
     <section
       id="jogar"
-      className="felt-surface-deep text-paper home-frame min-h-[90svh] py-[clamp(72px,10vw,140px)] grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-12 items-end"
+      className="felt-surface-deep text-paper home-frame min-h-[90dvh] py-[clamp(72px,10vw,140px)] grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-12 items-end"
       aria-labelledby="jogar-titulo"
     >
       <div className="lg:col-span-6 flex flex-col gap-6 self-end">
@@ -80,7 +80,6 @@ export function HomeJoin({ createRoomLogicData, joinRoomLogicData }: {
           onChange={(value) => setMode(value as JoinMode)}
           fullWidth
           size="md"
-          radius={0}
           color="dark"
           className="mt-6"
           data={[

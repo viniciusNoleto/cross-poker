@@ -40,10 +40,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       return NextResponse.json({ success: false, message: { 'pt-br': 'Já há uma troca em andamento.', 'es-mx': 'Ya hay un intercambio en curso.', 'en-us': 'A swap is already in progress.' }, data: null }, { status: 409 });
     }
 
-    if (game.pending_draw !== null) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Há uma compra pendente nesta partida. Aguarde a resolução antes de iniciar uma Troca.', 'es-mx': 'Hay una compra pendiente en esta partida. Espera a que se resuelva antes de iniciar un Cambio.', 'en-us': 'There is a pending draw in this game. Wait for it to be resolved before starting a Swap.' }, data: null }, { status: 409 });
-    }
-
     if (!Number.isInteger(quantity) || quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
       return NextResponse.json({ success: false, message: { 'pt-br': 'Escolha entre 1 e 5 cartas para trocar.', 'es-mx': 'Elige entre 1 y 5 cartas para intercambiar.', 'en-us': 'Choose between 1 and 5 cards to swap.' }, data: null }, { status: 422 });
     }
@@ -56,7 +52,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       .where(and(eq(gamePlayers.game_id, gameId), eq(gamePlayers.seat, partnerSeat)));
 
     if (!partnerPlayer || gamePlayer.discards_remaining < 1 || partnerPlayer.discards_remaining < 1) {
-      return NextResponse.json({ success: false, message: { 'pt-br': 'Ambos os parceiros precisam ter ao menos 1 Bolo disponível.', 'es-mx': 'Ambos compañeros deben tener al menos 1 Bolo disponible.', 'en-us': 'Both partners need at least 1 Bolo available.' }, data: null }, { status: 422 });
+      return NextResponse.json({ success: false, message: { 'pt-br': 'Ambos os parceiros precisam ter ao menos 1 Descarte disponível.', 'es-mx': 'Ambos compañeros deben tener al menos 1 Descarte disponible.', 'en-us': 'Both partners need at least 1 Discard available.' }, data: null }, { status: 422 });
     }
 
     const pendingSwap: IPendingSwap = {
@@ -67,7 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ gam
       partner_cards: null,
     };
 
-    await db.update(games).set({ pending_swap: pendingSwap }).where(eq(games.id, gameId));
+    await db.update(games).set({ pending_swap: pendingSwap, last_action_at: new Date() }).where(eq(games.id, gameId));
 
     publish(`game:${gameId}`);
 
