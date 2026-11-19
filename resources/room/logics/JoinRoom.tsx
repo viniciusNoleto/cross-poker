@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import * as yup from 'yup';
 import { Form } from '@/components/form/Form';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton } from '@/resources/game/components/ActionButton';
 import { FormTextInput } from '@/components/form/TextInput';
 import { useValidatedFormState } from '@/utils/state';
 import { resolveApiMessage } from '@/utils/apiMessage';
@@ -83,15 +83,15 @@ export function JoinRoomLogicComponent({ logicData }: { logicData: ReturnType<ty
         required
       />
 
-      <FormButton
+      <ActionButton
         type="submit"
-        color="secondary"
-        size="lg"
+        label="Entrar na sala"
+        tone="ink"
+        size="md"
+        icon="lucide:log-in"
         loading={joinRoomIsPending}
-        rightIcon="lucide:log-in"
-      >
-        Entrar na sala
-      </FormButton>
+        fullWidth
+      />
     </Form>
   );
 }

@@ -17,7 +17,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="relative w-12 h-[67px]">
+      <div className="relative w-12 h-16.75">
         <UtilsFor
           each={Array.from({ length: visible })}
           eachKey={({ index }) => index}
@@ -34,12 +34,12 @@ export function DiscardPile({ count }: DiscardPileProps) {
 
         <UtilsIf condition={!count}>
           {() => (
-            <div className="w-12 h-[67px] rounded-[6px] border-2 border-dashed border-paper/25" />
+            <div className="w-12 h-16.75 rounded-md border-2 border-dashed border-paper/25" />
           )}
         </UtilsIf>
       </div>
 
-      <span className="text-paper/85 text-[13px] tabular">
+      <span className="text-paper/85 text-[13px] tabular-nums">
         {`Descarte (${count})`}
       </span>
     </div>

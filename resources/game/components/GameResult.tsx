@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
@@ -9,6 +8,7 @@ import { EFinishReason } from '../enums/EFinishReason';
 import { scoreByTeam } from '../models/Turn';
 import { teamForSeat } from '../models/Team';
 import { CHIP_COLORS, StackedChip } from './PokerChip';
+import { ActionButton } from './ActionButton';
 import type { IGameState } from '../models/GameState';
 
 const TEAM_SWATCH: Record<`${ETeam}`, string> = {
@@ -95,7 +95,7 @@ function TeamPanel({ state, team, total, winner, index }: {
 
       <div className="flex items-end gap-4">
         <div
-          className="relative w-[30px]"
+          className="relative w-7.5"
           style={{ height: 17 + (chips - 1) * 5 }}
           aria-hidden="true"
         >
@@ -120,7 +120,7 @@ function TeamPanel({ state, team, total, winner, index }: {
           </UtilsFor>
         </div>
 
-        <span className={`font-display tabular leading-none text-[52px] md:text-[64px] ${winner ? 'text-gold' : 'text-paper'}`}>
+        <span className={`font-display tabular-nums leading-none text-[52px] md:text-[64px] ${winner ? 'text-gold' : 'text-paper'}`}>
           {total}
         </span>
 
@@ -140,7 +140,7 @@ function TeamPanel({ state, team, total, winner, index }: {
                 {`${player.name}${state.you?.seat === player.seat ? ' (você)' : ''}`}
               </span>
 
-              <span className="font-display tabular text-[20px] text-paper/90">
+              <span className="font-display tabular-nums text-[20px] text-paper/90">
                 {player.score}
               </span>
             </div>
@@ -193,7 +193,7 @@ export function GameResult({ state }: { state: IGameState }) {
           </p>
         </motion.div>
 
-        <div className="w-full flex items-start gap-3 bg-felt-night/70 border-l-4 border-gold px-4 py-3 text-paper text-[14px] md:text-[15px] leading-[1.5]">
+        <div className="w-full flex items-start gap-3 bg-felt-night/70 border-l-4 border-gold px-4 py-3 text-paper text-[14px] md:text-[15px] leading-normal">
           <span className="text-gold font-bold shrink-0">
             Por que acabou?
           </span>
@@ -220,12 +220,13 @@ export function GameResult({ state }: { state: IGameState }) {
           </UtilsFor>
         </div>
 
-        <Link
+        <ActionButton
           href="/"
-          className="bg-gold text-gold-ink font-bold px-6 py-3 text-[15px] hover:bg-gold-deep transition-colors"
-        >
-          Voltar ao início
-        </Link>
+          label="Voltar ao início"
+          tone="gold"
+          size="md"
+          icon="lucide:house"
+        />
       </div>
     </section>
   );

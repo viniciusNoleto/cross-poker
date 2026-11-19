@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react';
+import { FELT_PALETTE, GOLD_PALETTE, INK_PALETTE, SUIT_RED_PALETTE, TEAM_PALETTE } from '@/shared/constants/colors';
 
 // Chip colours shared by the home and the game: gold/ink for Team A, pink/red for Team B.
 export const CHIP_COLORS = {
-  gold: '#f2b739',
-  red: '#b3132b',
-  pink: '#ef6f7f',
-  ink: '#17140f',
-  felt: '#17603f',
+  gold: GOLD_PALETTE.DEFAULT,
+  red: SUIT_RED_PALETTE.DEFAULT,
+  pink: TEAM_PALETTE.b,
+  ink: INK_PALETTE.DEFAULT,
+  felt: FELT_PALETTE.light,
 };
 
 // A casino chip drawn in SVG: coloured disc, six paper stripes on the edge and a dashed inner

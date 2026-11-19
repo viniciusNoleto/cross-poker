@@ -2,153 +2,147 @@
 @config "../tailwind.config.mjs";
 
 /*
- * Cross Poker — tokens visuais.
- * As cores saem do próprio jogo: o feltro da mesa, o papel da carta, o vermelho dos naipes
- * e o dourado do logo. Todo o resto (Tailwind, Mantine, componentes) referencia estes tokens.
+ * Só o que é global ou que o Tailwind não expressa sozinho (texturas SVG, keyframes).
+ * Cores, fontes e easings ficam em `tailwind.config.mjs` (paletas em `shared/constants/colors.js`).
  */
-:root {
-  --felt: #0f4a33;
-  --felt-deep: #0a3424;
-  --felt-night: #061f16;
-  --felt-light: #17603f;
-  --felt-line: #1f7350;
-  --paper: #f4f4f1;
-  --paper-2: #e9e9e4;
-  --paper-3: #dcdcd5;
-  --ink: #17140f;
-  --ink-soft: #4b463d;
-  --suit-red: #b3132b;
-  --suit-red-deep: #8a0f22;
-  --gold: #f2b739;
-  --gold-deep: #c98f12;
-  --gold-ink: #2b1d03;
-  --team-a: #f2b739;
-  --team-b: #ef6f7f;
 
-  --font-display: 'Boska', 'Iowan Old Style', Georgia, serif;
-  --font-sans: 'Satoshi', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+@theme {
+  /*
+   * Caça-níquel: rolos de dígitos (SlotReel) e lâmpadas do letreiro (MarqueeBulbs).
+   * A faixa de cada rolo tem 11 dígitos (0-9 e o 0 de novo), então girar até -10/11 da altura
+   * volta exatamente ao começo — o giro em loop não dá salto.
+   */
+  --animate-reel-spin: reel-spin 0.32s linear infinite;
+  --animate-reel-land: reel-land 0.42s cubic-bezier(0.2, 0.8, 0.3, 1.15) both;
+  --animate-bulb-chase: bulb-chase 1s linear infinite;
+  --animate-bulb-flash: bulb-flash 0.26s steps(1) infinite;
 
-  --ease-deal: cubic-bezier(0.22, 1, 0.36, 1);
+  @keyframes reel-spin {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(-90.909%);
+    }
+  }
+
+  @keyframes reel-land {
+    0% {
+      transform: translateY(-18%);
+    }
+
+    55% {
+      transform: translateY(7%);
+    }
+
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bulb-chase {
+    0%,
+    100% {
+      opacity: 0.22;
+    }
+
+    35% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bulb-flash {
+    0%,
+    49% {
+      opacity: 1;
+    }
+
+    50%,
+    100% {
+      opacity: 0.2;
+    }
+  }
 }
 
-@theme inline {
-  --color-felt: var(--felt);
-  --color-felt-deep: var(--felt-deep);
-  --color-felt-night: var(--felt-night);
-  --color-felt-light: var(--felt-light);
-  --color-felt-line: var(--felt-line);
-  --color-paper: var(--paper);
-  --color-paper-2: var(--paper-2);
-  --color-paper-3: var(--paper-3);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-suit-red: var(--suit-red);
-  --color-suit-red-deep: var(--suit-red-deep);
-  --color-gold: var(--gold);
-  --color-gold-deep: var(--gold-deep);
-  --color-gold-ink: var(--gold-ink);
-  --color-team-a: var(--team-a);
-  --color-team-b: var(--team-b);
-  --font-display: var(--font-display);
-  --font-sans: var(--font-sans);
-}
+@layer base {
+  html {
+    @apply text-[15px] scroll-smooth bg-felt-night text-ink font-sans;
+  }
 
-html {
-  @apply text-[15px];
-  scroll-behavior: smooth;
-  background: var(--felt-night);
-  color: var(--ink);
-  font-family: var(--font-sans);
-}
+  body {
+    @apply bg-felt-night;
+  }
 
-body {
-  background: var(--felt-night);
-}
+  ::selection {
+    @apply bg-gold text-gold-ink;
+  }
 
-::selection {
-  background: var(--gold);
-  color: var(--gold-ink);
-}
+  :focus-visible {
+    @apply outline-3 outline-solid outline-gold outline-offset-2;
+  }
 
-:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 2px;
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-felt-line rounded-full;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 /*
  * Feltro: cor chapada com uma trama finíssima (ruído SVG), para a mesa parecer tecido e não
  * tela. Sem gradientes.
  */
-.felt-surface {
-  background-color: var(--felt);
+@utility felt-surface {
+  @apply bg-felt;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.felt-surface-deep {
-  background-color: var(--felt-deep);
+@utility felt-surface-deep {
+  @apply bg-felt-deep;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* Verso das cartas: treliça de losangos em vermelho de naipe, moldura em papel. */
-.card-back {
-  background-color: var(--suit-red-deep);
+@utility card-back {
+  @apply bg-suit-red-deep bg-size-[8px_8px];
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23a3172d'/%3E%3C/svg%3E");
-  background-size: 8px 8px;
 }
 
-.card-face {
-  background: #fcfbf7;
-}
-
-.font-display {
-  font-family: var(--font-display);
-}
-
-.tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--felt-line);
-  border-radius: 999px;
-}
-
-.center-flex {
+@utility center-flex {
   @apply flex items-center justify-center;
 }
 
-.responsive-flex {
+@utility responsive-flex {
   @apply flex flex-wrap;
+
+  & > * {
+    @apply grow;
+  }
 }
 
-.responsive-flex > * {
-  @apply grow;
-}
-
-.merge-children {
+@utility merge-children {
   @apply grid grid-cols-1 grid-rows-1;
   grid-template-areas: 'merge';
-}
 
-.merge-children > * {
-  grid-area: merge;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+  & > * {
+    grid-area: merge;
   }
 }

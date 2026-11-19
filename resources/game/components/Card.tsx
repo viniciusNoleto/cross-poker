@@ -19,7 +19,7 @@ const SUIT_NAME: Record<`${ESuit}`, string> = {
 
 // Suit glyphs always use the sans font (the same as the pips in the card body): the display font
 // (Boska) has its own, different ♠/♣ glyphs, which made the corner index and the centre disagree.
-const SUIT_FONT = 'font-normal not-italic [font-family:var(--font-sans)]';
+const SUIT_FONT = 'font-normal not-italic font-sans';
 
 const RED_SUITS: Array<`${ESuit}`> = [ESuit.HEARTS, ESuit.DIAMONDS];
 
@@ -136,24 +136,24 @@ const PIP_LAYOUT: Record<number, PipPosition[]> = {
 // Proportions follow a real playing card (≈ 5:7). `md` keeps 48px of width because the
 // animation layers (MeldScoreAnimation, DrawAnimation) use it as their reference size.
 const SIZES = {
-  sm: 'w-8 h-[45px] rounded-[4px]',
-  md: 'w-12 h-[67px] rounded-[6px]',
-  lg: 'w-[68px] h-[95px] rounded-[7px]',
-  xl: 'w-[104px] h-[146px] rounded-[10px]',
+  sm: 'w-8 h-11.25 rounded-sm',
+  md: 'w-12 h-16.75 rounded-md',
+  lg: 'w-17 h-23.75 rounded-[7px]',
+  xl: 'w-26 h-36.5 rounded-[10px]',
 };
 
 const CORNER_SIZES = {
-  sm: 'text-[8px] top-[2px] left-[3px]',
-  md: 'text-[11px] top-[3px] left-[4px]',
-  lg: 'text-[14px] top-[4px] left-[5px]',
-  xl: 'text-[20px] top-[6px] left-[8px]',
+  sm: 'text-[8px] top-0.5 left-0.75',
+  md: 'text-[11px] top-0.75 left-1',
+  lg: 'text-[14px] top-1 left-1.25',
+  xl: 'text-[20px] top-1.5 left-2',
 };
 
 const CORNER_SIZES_BOTTOM = {
-  sm: 'text-[8px] bottom-[2px] right-[3px]',
-  md: 'text-[11px] bottom-[3px] right-[4px]',
-  lg: 'text-[14px] bottom-[4px] right-[5px]',
-  xl: 'text-[20px] bottom-[6px] right-[8px]',
+  sm: 'text-[8px] bottom-0.5 right-0.75',
+  md: 'text-[11px] bottom-0.75 right-1',
+  lg: 'text-[14px] bottom-1 right-1.25',
+  xl: 'text-[20px] bottom-1.5 right-2',
 };
 
 const PIP_SIZES = {
@@ -174,10 +174,10 @@ const ACE_PIP_SIZES = {
 // where the corner index (rank + suit) sits, plus a small gap — so the frame never touches it.
 // Notch sizes were measured from the rendered index (Boska rank + sans suit) at each size.
 const ROYAL_FRAME = {
-  sm: 'inset-x-[5px] inset-y-[9px] rounded-[2px]',
-  md: 'inset-x-[7px] inset-y-[13px] rounded-[3px]',
-  lg: 'inset-x-[9px] inset-y-[17px] rounded-[4px]',
-  xl: 'inset-x-[14px] inset-y-[26px] rounded-[6px]',
+  sm: 'inset-x-1.25 inset-y-2.25 rounded-xs',
+  md: 'inset-x-1.75 inset-y-3.25 rounded-[3px]',
+  lg: 'inset-x-2.25 inset-y-4.25 rounded-sm',
+  xl: 'inset-x-3.5 inset-y-6.5 rounded-md',
 };
 
 const ROYAL_NOTCH = {
@@ -202,17 +202,17 @@ const ROYAL_LETTER_SIZES = {
 
 // Reserved space between the central pips area and the corner indices, to avoid collisions.
 const PIP_PADDING = {
-  sm: 'inset-x-[5px] inset-y-1',
-  md: 'inset-x-[8px] inset-y-1.5',
-  lg: 'inset-x-[11px] inset-y-2',
-  xl: 'inset-x-[17px] inset-y-3',
+  sm: 'inset-x-1.25 inset-y-1',
+  md: 'inset-x-2 inset-y-1.5',
+  lg: 'inset-x-2.75 inset-y-2',
+  xl: 'inset-x-4.25 inset-y-3',
 };
 
 const BACK_FRAME = {
-  sm: 'inset-[2px] rounded-[2px]',
-  md: 'inset-[3px] rounded-[4px]',
-  lg: 'inset-[4px] rounded-[5px]',
-  xl: 'inset-[6px] rounded-[7px]',
+  sm: 'inset-0.5 rounded-xs',
+  md: 'inset-0.75 rounded-sm',
+  lg: 'inset-1 rounded-[5px]',
+  xl: 'inset-1.5 rounded-[7px]',
 };
 
 const BACK_LOGO = {
@@ -289,7 +289,7 @@ export function Card({ card, size = 'md', selected, onClick, className = '', lay
       onClick={onClick}
       aria-label={`${card.rank} de ${SUIT_NAME[card.suit]}`}
       aria-pressed={clickable ? !!selected : undefined}
-      className={`card-face relative shrink-0 ${SIZES[size]} ${CARD_SHADOW} ${color} select-none transition-[translate,box-shadow] duration-200 ease-out ${clickable ? 'cursor-pointer hover:-translate-y-1.5' : 'cursor-default'} ${selected ? '-translate-y-3 hover:-translate-y-3 outline-[3px] outline-gold outline-offset-0' : ''} ${className}`}
+      className={`bg-paper-face relative shrink-0 ${SIZES[size]} ${CARD_SHADOW} ${color} select-none transition-[translate,box-shadow] duration-200 ease-out ${clickable ? 'cursor-pointer hover:-translate-y-1.5' : 'cursor-default'} ${selected ? '-translate-y-3 hover:-translate-y-3 outline-[3px] outline-gold outline-offset-0' : ''} ${className}`}
     >
       <span className={`absolute flex flex-col items-center leading-[0.9] font-display font-medium ${CORNER_SIZES[size]}`}>
         <span>

@@ -46,7 +46,7 @@ export function MeldPile({ meldPile }: MeldPileProps) {
           openPile();
         }}
       >
-        <div className={`flex -space-x-8 p-1 rounded-[8px] ring-0 ring-gold transition-[box-shadow] duration-150 ${hasCards ? 'group-hover:ring-[3px] group-focus-visible:ring-[3px]' : ''}`}>
+        <div className={`flex -space-x-8 p-1 rounded-lg ring-0 ring-gold transition-shadow duration-150 ${hasCards ? 'group-hover:ring-[3px] group-focus-visible:ring-[3px]' : ''}`}>
           <UtilsFor
             each={meldPile.slice(-4)}
             eachKey={({ item }) => item.id}
@@ -61,12 +61,12 @@ export function MeldPile({ meldPile }: MeldPileProps) {
 
           <UtilsIf condition={!hasCards}>
             {() => (
-              <div className="w-12 h-[67px] rounded-[6px] border-2 border-dashed border-paper/25" />
+              <div className="w-12 h-16.75 rounded-md border-2 border-dashed border-paper/25" />
             )}
           </UtilsIf>
         </div>
 
-        <span className="text-paper/85 text-[13px] tabular">
+        <span className="text-paper/85 text-[13px] tabular-nums">
           {`Bolo (${meldPile.length})`}
         </span>
       </div>
@@ -82,7 +82,7 @@ export function MeldPile({ meldPile }: MeldPileProps) {
         centered
         withCloseButton={false}
         classNames={{
-          content: 'felt-surface border-[10px] md:border-[14px] border-[#3a2414] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]',
+          content: 'felt-surface! border-10 md:border-14 border-[#3a2414] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]',
           header: 'bg-transparent! justify-center pt-5! pb-0!',
           title: 'font-display italic text-gold text-[26px] leading-none',
           body: 'pb-6!',

@@ -5,8 +5,8 @@ import { useSyncExternalStore } from 'react';
 // Background music for the Partida: one ambient track on loop, with its own volume and mute
 // (independent from the sound effects in `utils/sound.ts`, preferences kept in this browser).
 //
-// The track is an `<audio loop>` element streamed by the browser (a 3-minute track decoded into
-// a Web Audio buffer would take ~45MB of memory). It's routed through a Web Audio GainNode
+// The track is an `<audio loop>` element streamed by the browser (a 4-minute track decoded into
+// a Web Audio buffer would take ~60MB+ of memory). It's routed through a Web Audio GainNode
 // because iOS ignores `HTMLMediaElement.volume` — the gain is the only volume control that works
 // everywhere, and it also gives smooth fade-in/fade-out.
 //

@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { animate, motion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
 import { ChipBurst } from './ChipBurst';
+import { MarqueeBulbs, SlotReel } from './SlotReel';
 import { chipsForCard } from '../models/Card';
 import { sounds } from '@/utils/sound';
 import { ECombo } from '../enums/ECombo';
@@ -42,6 +44,7 @@ const INTERVAL_BETWEEN_CARDS_MS = 220;
 const MULTIPLIER_DURATION_MS = 450;
 const TOTAL_DURATION_MS = 850;
 const BIG_SCORE_POINTS = 500;
+const EXIT_DURATION_MS = 480;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -56,10 +59,12 @@ type AnimationState = {
   cardsRevealed: number;
   chipsShown: number;
   pointsShown: number;
+  // The total reel stopped on the final value — bulbs flash, the window lights up.
+  landed: boolean;
 };
 
 const INITIAL_STATE: AnimationState = {
-  phase: 'flying', cardsRevealed: 0, chipsShown: 0, pointsShown: 0,
+  phase: 'flying', cardsRevealed: 0, chipsShown: 0, pointsShown: 0, landed: false,
 };
 
 export type Point = { x: number; y: number };
@@ -100,7 +105,7 @@ export function MeldScoreAnimation({
   combo, meldedCards, scoringCards, chips, multiplier, points, origin, label, bigScoreSound, onFinish,
 }: MeldScoreAnimationProps) {
   const [{
-    phase, cardsRevealed, chipsShown, pointsShown,
+    phase, cardsRevealed, chipsShown, pointsShown, landed,
   }, setState] = useState<AnimationState>(INITIAL_STATE);
 
   const onFinishRef = useRef(onFinish);
@@ -136,7 +141,7 @@ export function MeldScoreAnimation({
 
         if (cancelled) return;
 
-        setState((s) => ({ ...s, phase: 'total' }));
+        setState((s) => ({ ...s, phase: 'total', pointsShown: chips }));
         if (bigScoreSound && points > BIG_SCORE_POINTS) sounds.roulette(TOTAL_DURATION_MS + 500);
         else sounds.chipRoll();
 
@@ -144,13 +149,15 @@ export function MeldScoreAnimation({
           duration: TOTAL_DURATION_MS / 1000,
           ease: EASE_SLOT_MACHINE,
           onUpdate: (value) => {
-            if (!cancelled) setState((s) => ({ ...s, pointsShown: Math.round(value) }));
+            if (!cancelled) setState((s) => ({ ...s, pointsShown: value }));
           },
         });
 
         if (cancelled) return;
 
-        await wait(1800);
+        setState((s) => ({ ...s, pointsShown: points, landed: true }));
+
+        await wait(1900);
 
         if (!cancelled) onFinishRef.current();
 
@@ -173,7 +180,7 @@ export function MeldScoreAnimation({
         duration: HOP_DURATION_MS / 1000,
         ease: EASE_SLOT_MACHINE,
         onUpdate: (value) => {
-          if (!cancelled) setState((s) => ({ ...s, chipsShown: Math.round(value) }));
+          if (!cancelled) setState((s) => ({ ...s, chipsShown: value }));
         },
       });
 
@@ -204,7 +211,7 @@ export function MeldScoreAnimation({
         duration: HOP_DURATION_MS / 1000,
         ease: EASE_SLOT_MACHINE,
         onUpdate: (value) => {
-          if (!cancelled) setState((s) => ({ ...s, chipsShown: Math.round(value) }));
+          if (!cancelled) setState((s) => ({ ...s, chipsShown: value }));
         },
       }).then(() => hopCard(0, baseChips));
     });
@@ -214,6 +221,13 @@ export function MeldScoreAnimation({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [combo, meldedCards, scoringCards, chips, multiplier, points]);
+
+  const counting = phase !== 'flying';
+  const multiplierKnown = phase === 'multiplier' || phase === 'total';
+  const chipsDigits = Math.max(2, String(chips).length);
+  const pointsDigits = Math.max(3, String(points).length);
+
+  const bulbsMode = landed ? 'flash' : 'chase';
 
   return (
     <div className="pointer-events-none absolute inset-0 z-40 overflow-visible">
@@ -240,6 +254,13 @@ export function MeldScoreAnimation({
                   y: final.y,
                   opacity: scoring ? 1 : 0.4,
                   scale: scoring ? 1 : 0.72,
+                }}
+                exit={{
+                  x: 0,
+                  y: 0,
+                  opacity: 0,
+                  scale: 0.55,
+                  transition: { duration: EXIT_DURATION_MS / 1000, delay: (index * 40) / 1000, ease: 'easeIn' },
                 }}
                 transition={{ duration: FLIGHT_DURATION_MS / 1000, delay: (index * FLIGHT_STAGGER_MS) / 1000, ease: 'easeOut' }}
               >
@@ -274,7 +295,7 @@ export function MeldScoreAnimation({
 
                 <motion.span
                   key={card.id}
-                  className="absolute left-0 top-0 text-gold font-display font-medium text-2xl tabular whitespace-nowrap"
+                  className="absolute left-0 top-0 text-gold font-display font-medium text-2xl tabular-nums whitespace-nowrap"
                   style={{ translateX: '-50%' }}
                   initial={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2, opacity: 0, scale: 0.6 }}
                   animate={{ x: pos.x, y: pos.y - CARD_HEIGHT / 2 - 34, opacity: [0, 1, 1, 0], scale: 1 }}
@@ -288,79 +309,119 @@ export function MeldScoreAnimation({
         </UtilsIf>
       </div>
 
+      {/* The slot cabinet. Positioned by the outer div; the inner one is the motion element, so its
+          enter/exit transforms don't fight the centring translate. */}
       <div
-        className="absolute left-1/2 top-1/2 flex flex-col items-center gap-1.5 bg-felt-night px-7 py-4 min-w-[220px] shadow-[0_18px_40px_-16px_rgba(0,0,0,0.7)]"
-        style={{ transform: 'translate(-50%, 86px)' }}
+        className="absolute left-1/2 top-1/2"
+        style={{ transform: 'translate(-50%, 78px)' }}
       >
-        <UtilsIf condition={phase !== 'flying' && !!label}>
-          {() => (
-            <span className="text-paper/80 text-[13px]">
-              {label}
-            </span>
-          )}
-        </UtilsIf>
+        <motion.div
+          className="relative flex flex-col items-center gap-2.5 bg-felt-night border-[3px] border-gold-deep px-4 md:px-5 pt-2.5 pb-3 shadow-[0_22px_44px_-18px_rgba(0,0,0,0.75)]"
+          initial={{ opacity: 0, y: 36, scale: 0.86 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{
+            opacity: 0,
+            y: 28,
+            scale: 0.92,
+            transition: { duration: EXIT_DURATION_MS / 1000, ease: [0.4, 0, 0.7, 0.2] },
+          }}
+          transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.12 }}
+        >
+          <MarqueeBulbs
+            count={13}
+            mode={bulbsMode}
+          />
 
-        <UtilsIf condition={phase !== 'flying'}>
-          {() => (
-            <span className="text-gold font-display italic text-[26px] leading-none">
-              {COMBO_NAME[combo]}
-            </span>
-          )}
-        </UtilsIf>
+          <div className="flex flex-col items-center gap-1 min-h-11 justify-end">
+            <UtilsIf condition={!!label}>
+              {() => (
+                <span className="text-paper/80 text-[13px] leading-none">
+                  {label}
+                </span>
+              )}
+            </UtilsIf>
 
-        <UtilsIf condition={phase !== 'flying'}>
-          {() => (
-            <div className="flex items-center gap-2 font-display tabular">
-              <span className="text-paper text-[30px] leading-none">
-                {chipsShown}
-              </span>
-
-              <UtilsIf condition={phase === 'multiplier' || phase === 'total'}>
-                {() => (
-                  <>
-                    <span className="text-paper/60 text-xl">
-                      ×
-                    </span>
-
-                    <motion.span
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.3, ease: 'backOut' }}
-                      className="text-gold text-[30px] leading-none"
-                    >
-                      {multiplier}
-                    </motion.span>
-                  </>
-                )}
-              </UtilsIf>
-            </div>
-          )}
-        </UtilsIf>
-
-        <UtilsIf condition={phase === 'total'}>
-          {() => (
-            <ChipBurst
-              count={Math.min(14, 5 + Math.floor(points / 40))}
-              reach={140}
-              size={26}
-              delay={0.15}
-            />
-          )}
-        </UtilsIf>
-
-        <UtilsIf condition={phase === 'total'}>
-          {() => (
             <motion.span
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.35, ease: 'backOut' }}
-              className="text-paper font-display tabular text-[36px] leading-none"
+              className="text-gold font-display italic text-[24px] md:text-[28px] leading-none whitespace-nowrap"
+              initial={false}
+              animate={{ opacity: counting ? 1 : 0, y: counting ? 0 : -10, scale: landed ? [1, 1.12, 1] : 1 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             >
-              {`= ${pointsShown} pontos`}
+              {COMBO_NAME[combo]}
             </motion.span>
-          )}
-        </UtilsIf>
+          </div>
+
+          <div className="flex items-start gap-1.5 md:gap-2 text-[24px] md:text-[30px]">
+            <ReelSlot caption="fichas">
+              <SlotReel
+                value={chipsShown}
+                digits={chipsDigits}
+                spinning={!counting}
+              />
+            </ReelSlot>
+
+            <span className="font-display text-gold text-[0.9em] leading-[1.45em]">
+              ×
+            </span>
+
+            <ReelSlot caption="mult.">
+              <SlotReel
+                value={multiplierKnown ? multiplier : 0}
+                digits={String(multiplier).length}
+                spinning={!multiplierKnown}
+                tone="gold"
+              />
+            </ReelSlot>
+
+            <span className="font-display text-gold text-[0.9em] leading-[1.45em]">
+              =
+            </span>
+
+            <ReelSlot caption="pontos">
+              <motion.span
+                className="relative block"
+                animate={{ scale: landed ? [1, 1.14, 1] : 1 }}
+                transition={{ duration: 0.45, ease: 'backOut' }}
+              >
+                <SlotReel
+                  value={phase === 'total' ? pointsShown : 0}
+                  digits={pointsDigits}
+                  spinning={phase !== 'total'}
+                  lit={landed}
+                />
+
+                <UtilsIf condition={landed}>
+                  {() => (
+                    <ChipBurst
+                      count={Math.min(14, 5 + Math.floor(points / 40))}
+                      reach={140}
+                      size={26}
+                    />
+                  )}
+                </UtilsIf>
+              </motion.span>
+            </ReelSlot>
+          </div>
+
+          <MarqueeBulbs
+            count={13}
+            mode={bulbsMode}
+          />
+        </motion.div>
       </div>
     </div>
+  );
+}
+
+// One reel window with its caption underneath.
+function ReelSlot({ caption, children }: { caption: string; children: ReactNode }) {
+  return (
+    <span className="flex flex-col items-center gap-1">
+      {children}
+
+      <span className="text-paper/70 text-[12px] leading-none">
+        {caption}
+      </span>
+    </span>
   );
 }

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { sounds } from '@/utils/sound';
-import { FormButton } from '@/components/form/Button';
 import { FormNumberInput } from '@/components/form/Number';
 import { UtilsIf } from '@/components/utils/If';
 import { nFor, UtilsFor } from '@/components/utils/For';
@@ -11,6 +10,7 @@ import { Modal } from '@mantine/core';
 import { Icon } from '@iconify/react';
 import { motion } from 'motion/react';
 import { Card } from '../components/Card';
+import { ActionButton, CardsGlyph } from '../components/ActionButton';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { startSwapService } from '../services/startSwap';
 import { chooseSwapService } from '../services/chooseSwap';
@@ -60,7 +60,7 @@ function SwapQuantityCards({ quantity, owner }: { quantity: number; owner: 'you'
   const offsetY = owner === 'partner' ? -24 : 24;
 
   return (
-    <div className="flex items-center justify-center min-h-[95px]">
+    <div className="flex items-center justify-center min-h-23.75">
       <UtilsFor each={nFor(MAX_QUANTITY)}>
         {({ item }) => (
           <motion.div
@@ -114,20 +114,17 @@ export function StartSwapLogicComponent({ logicData, disabled, partnerName }: { 
 
   return (
     <>
-      <FormButton
-        variant="filled"
-        color="tertiary"
-        size="md"
-        className="min-w-[112px]"
+      <ActionButton
+        label="Troca"
+        tone="paper"
+        badge={<CardsGlyph variant="crossed" />}
         disabled={disabled}
-        rightIcon="lucide:repeat"
+        tooltip={!disabled && partnerName ? `Trocar cartas em segredo com ${partnerName}` : undefined}
         onClick={() => {
           sounds.chooseSwap();
           setStartSwapOpen(true);
         }}
-      >
-        Troca
-      </FormButton>
+      />
 
       {/* Same look as the Bolo modal: felt with the wooden rim. Partner's cards on top, the
           quantity in the middle, your cards at the bottom — both sides give the same amount. */}
@@ -140,7 +137,7 @@ export function StartSwapLogicComponent({ logicData, disabled, partnerName }: { 
         centered
         withCloseButton={false}
         classNames={{
-          content: 'felt-surface border-[10px] md:border-[14px] border-[#3a2414] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]',
+          content: 'felt-surface! border-10 md:border-14 border-[#3a2414] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)]',
           header: 'bg-transparent! justify-center pt-5! pb-0!',
           title: 'font-display italic text-gold text-[26px] leading-none',
           body: 'pb-6!',
@@ -201,24 +198,23 @@ export function StartSwapLogicComponent({ logicData, disabled, partnerName }: { 
             Você entrega
           </span>
 
-          <div className="flex items-center justify-center gap-2 pt-2">
-            <FormButton
-              variant="subtle"
-              color="gray.0"
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <ActionButton
+              label="Cancelar"
+              tone="felt"
+              size="md"
               disabled={startSwapIsPending}
               onClick={closeStartSwap}
-            >
-              Cancelar
-            </FormButton>
+            />
 
-            <FormButton
+            <ActionButton
               type="submit"
-              color="tertiary"
+              label="Confirmar"
+              tone="paper"
+              size="md"
+              badge={<CardsGlyph variant="crossed" />}
               loading={startSwapIsPending}
-              rightIcon="lucide:repeat"
-            >
-              Confirmar
-            </FormButton>
+            />
           </div>
         </Form>
       </Modal>
@@ -307,15 +303,15 @@ export function ChooseSwapLogicComponent({ state, selectedCards, setSelectedCard
                   {`Escolha ${pendingSwap.quantity} carta(s) da sua mão para a troca (${selectedCards.length}/${pendingSwap.quantity})`}
                 </span>
 
-                <FormButton
-                  color="secondary"
+                <ActionButton
+                  label="Confirmar troca"
+                  tone="paper"
+                  size="md"
+                  badge={<CardsGlyph variant="crossed" />}
                   loading={chooseSwapIsPending}
                   disabled={selectedCards.length !== pendingSwap.quantity}
-                  rightIcon="lucide:repeat"
                   onClick={confirmSwapChoice}
-                >
-                  Confirmar troca
-                </FormButton>
+                />
               </div>
             ),
           },

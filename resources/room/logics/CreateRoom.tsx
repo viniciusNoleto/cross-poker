@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import * as yup from 'yup';
 import { Form } from '@/components/form/Form';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton } from '@/resources/game/components/ActionButton';
 import { FormTextInput } from '@/components/form/TextInput';
 import { useValidatedFormState } from '@/utils/state';
 import { resolveApiMessage } from '@/utils/apiMessage';
@@ -68,15 +68,15 @@ export function CreateRoomLogicComponent({ logicData }: { logicData: ReturnType<
         required
       />
 
-      <FormButton
+      <ActionButton
         type="submit"
-        color="primary"
-        size="lg"
+        label="Criar sala"
+        tone="gold"
+        size="md"
+        icon="lucide:sparkles"
         loading={createRoomIsPending}
-        rightIcon="lucide:sparkles"
-      >
-        Criar sala
-      </FormButton>
+        fullWidth
+      />
     </Form>
   );
 }

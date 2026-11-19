@@ -9,7 +9,7 @@ import { notifications } from '@mantine/notifications';
 import { Icon } from '@iconify/react';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton } from '@/resources/game/components/ActionButton';
 import { useServerSentEvent } from '@/utils/hooks';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { getRoomService, GET_ROOM_KEY } from '@/resources/room/services/getRoom';
@@ -90,7 +90,7 @@ export default function RoomPage() {
             alt=""
             width={38}
             height={38}
-            className="rounded-[6px]"
+            className="rounded-md"
           />
 
           <span className="font-display text-[1.375rem]">
@@ -98,7 +98,7 @@ export default function RoomPage() {
           </span>
         </Link>
 
-        <span className="text-paper/85 text-[15px] tabular">
+        <span className="text-paper/85 text-[15px] tabular-nums">
           {`${players.length} de ${TOTAL_SEATS} na mesa`}
         </span>
       </header>
@@ -119,7 +119,7 @@ export default function RoomPage() {
             className="group self-start flex items-center gap-5 rounded-md bg-paper text-ink pl-6 pr-5 py-4 transition-transform hover:-translate-y-0.5 active:translate-y-px"
             aria-label={`Copiar código da sala ${roomCode}`}
           >
-            <span className="font-display text-[clamp(2.5rem,1.8rem+2.4vw,3.5rem)] leading-none tracking-[0.14em] tabular">
+            <span className="font-display text-[clamp(2.5rem,1.8rem+2.4vw,3.5rem)] leading-none tracking-[0.14em] tabular-nums">
               {roomCode}
             </span>
 
@@ -140,16 +140,15 @@ export default function RoomPage() {
                 {
                   condition: !!you?.is_host,
                   content: () => (
-                    <FormButton
-                      color="secondary"
-                      size="lg"
+                    <ActionButton
+                      label={players.length < TOTAL_SEATS ? `Aguardando jogadores (${players.length}/${TOTAL_SEATS})` : 'Iniciar partida'}
+                      tone="gold"
+                      size="md"
+                      icon="lucide:play"
                       disabled={players.length < TOTAL_SEATS}
                       loading={startGameIsPending}
                       onClick={() => startGame()}
-                      rightIcon="lucide:play"
-                    >
-                      {players.length < TOTAL_SEATS ? `Aguardando jogadores (${players.length}/${TOTAL_SEATS})` : 'Iniciar partida'}
-                    </FormButton>
+                    />
                   ),
                 },
                 {
@@ -164,9 +163,9 @@ export default function RoomPage() {
           </div>
         </div>
 
-        <div className="lg:col-start-7 lg:col-span-6 relative grid grid-cols-[1fr_1.2fr_1fr] grid-rows-[auto_minmax(150px,1fr)_auto] gap-3 md:gap-4 items-center justify-items-center min-h-[420px]">
+        <div className="lg:col-start-7 lg:col-span-6 relative grid grid-cols-[1fr_1.2fr_1fr] grid-rows-[auto_minmax(150px,1fr)_auto] gap-3 md:gap-4 items-center justify-items-center min-h-105">
           <div
-            className="col-start-1 col-span-3 row-start-1 row-span-3 self-stretch justify-self-stretch mx-[16%] my-[22%] rounded-[999px] bg-felt-deep border-[12px] border-[#3a2414]"
+            className="col-start-1 col-span-3 row-start-1 row-span-3 self-stretch justify-self-stretch mx-[16%] my-[22%] rounded-[999px] bg-felt-deep border-12 border-[#3a2414]"
             aria-hidden="true"
           />
 
@@ -176,7 +175,7 @@ export default function RoomPage() {
           >
             {({ item: player, index }) => (
               <div
-                className={`${SEAT_PLACE[index]} relative z-10 w-full max-w-[180px] flex flex-col gap-1 px-4 py-3 ${player ? 'bg-paper text-ink' : 'bg-felt-night text-paper/80'}`}
+                className={`${SEAT_PLACE[index]} relative z-10 w-full max-w-45 flex flex-col gap-1 px-4 py-3 ${player ? 'bg-paper text-ink' : 'bg-felt-night text-paper/80'}`}
               >
                 <span
                   className={`absolute left-0 top-0 bottom-0 w-1 ${index % 2 === 0 ? 'bg-team-a' : 'bg-team-b'}`}

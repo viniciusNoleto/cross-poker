@@ -3,24 +3,26 @@ import {
   PRIMARY_COLOR_PALETTE,
   SECONDARY_COLOR_PALETTE,
   TERTIARY_COLOR_PALETTE,
+  SUIT_RED_PALETTE,
   colorVariations
 } from '../../shared/constants/colors'
+import { FONT_DISPLAY, FONT_SANS } from '../../shared/constants/fonts'
 
 export const mantineTheme = createTheme({
   primaryColor: 'primary',
   primaryShade: 5,
   autoContrast: true,
   luminanceThreshold: 0.45,
-  fontFamily: "'Satoshi', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  fontFamily: FONT_SANS,
   headings: {
-    fontFamily: "'Boska', 'Iowan Old Style', Georgia, serif",
+    fontFamily: FONT_DISPLAY,
     fontWeight: '500',
   },
   colors: {
     primary: Object.values(PRIMARY_COLOR_PALETTE) as any,
     secondary: Object.values(SECONDARY_COLOR_PALETTE) as any,
     tertiary: Object.values(TERTIARY_COLOR_PALETTE) as any,
-    red: Object.values(colorVariations('#B3132B')) as any,
+    red: Object.values(colorVariations(SUIT_RED_PALETTE.DEFAULT)) as any,
   },
   defaultRadius: 'xs',
   components: {

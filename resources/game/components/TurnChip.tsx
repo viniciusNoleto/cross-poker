@@ -9,10 +9,10 @@ export type TurnChipSide = 'bottom' | 'left' | 'top' | 'right';
 // Where the chip sits around the seat: always on the side facing the centre of the table
 // (the seat at the bottom gets it above, the one on the left gets it on its right, etc.).
 const SIDE_PLACEMENT: Record<TurnChipSide, string> = {
-  bottom: 'inset-x-0 bottom-[calc(100%-10px)] justify-center',
-  top: 'inset-x-0 top-[calc(100%-10px)] justify-center',
-  left: 'inset-y-0 left-[calc(100%-10px)] items-center',
-  right: 'inset-y-0 right-[calc(100%-10px)] items-center',
+  bottom: 'inset-x-0 bottom-[calc(100%+4px)] justify-center',
+  top: 'inset-x-0 top-[calc(100%+4px)] justify-center',
+  left: 'inset-y-0 left-[calc(100%-8px)] items-center',
+  right: 'inset-y-0 right-[calc(100%-8px)] items-center',
 };
 
 /**

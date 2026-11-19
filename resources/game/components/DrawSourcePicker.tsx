@@ -1,6 +1,6 @@
 'use client';
 
-import { FormButton } from '@/components/form/Button';
+import { ActionButton, CardsGlyph } from './ActionButton';
 import { EDrawSource } from '../enums/EDrawSource';
 import { EActionType } from '../enums/EActionType';
 import { drawSourceAvailability } from '../models/Draw';
@@ -42,38 +42,36 @@ export function DrawSourcePicker({ state, actionType, quantity, pendingSource, o
         {`${ACTION_LABEL[actionType]} · comprar ${quantity} carta(s) de:`}
       </span>
 
-      <div className="flex items-center gap-2">
-        <FormButton
-          color="secondary"
-          disabled={!deckHasEnough || busy}
+      <div className="flex items-center gap-3">
+        <ActionButton
+          label="Monte"
+          tone="paper"
+          size="md"
+          badge={<CardsGlyph variant="stack" />}
+          disabled={!deckHasEnough || (busy && pendingSource !== EDrawSource.DECK)}
           loading={pendingSource === EDrawSource.DECK}
           tooltip={!deckHasEnough ? 'O Monte (mesmo reembaralhando o Bolo) não tem cartas suficientes para esta compra' : undefined}
-          rightIcon="lucide:layers"
           onClick={() => onPick(EDrawSource.DECK)}
-        >
-          Monte
-        </FormButton>
+        />
 
-        <FormButton
-          variant="white"
-          color="dark"
-          disabled={!discardHasEnough || busy}
+        <ActionButton
+          label="Descarte"
+          tone="red"
+          size="md"
+          badge={<CardsGlyph variant="stack" />}
+          disabled={!discardHasEnough || (busy && pendingSource !== EDrawSource.DISCARD)}
           loading={pendingSource === EDrawSource.DISCARD}
           tooltip={!discardHasEnough ? 'O Descarte não tem cartas suficientes para esta compra' : undefined}
-          rightIcon="lucide:layers"
           onClick={() => onPick(EDrawSource.DISCARD)}
-        >
-          Descarte
-        </FormButton>
+        />
 
-        <FormButton
-          variant="subtle"
-          color="gray.0"
+        <ActionButton
+          label="Cancelar"
+          tone="felt"
+          size="md"
           disabled={busy}
           onClick={onCancel}
-        >
-          Cancelar
-        </FormButton>
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
 import { Card, CrossLogo } from '@/resources/game/components/Card';
 import { SoundToggle } from '@/resources/game/components/SoundToggle';
+import { ActionButton } from '@/resources/game/components/ActionButton';
 
 const NAV_LINKS = [
   { href: '#mesa', label: 'Pontuação' },
@@ -66,7 +67,7 @@ export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'creat
             alt=""
             width={40}
             height={40}
-            className="rounded-[6px]"
+            className="rounded-md"
             priority
           />
 
@@ -94,12 +95,12 @@ export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'creat
         <div className="flex items-center gap-2">
           <SoundToggle />
 
-          <a
+          <ActionButton
             href="#jogar"
-            className="home-button bg-gold text-gold-ink hover:bg-[#f6c65a] min-h-11! px-5!"
-          >
-            Jogar agora
-          </a>
+            label="Jogar agora"
+            tone="gold"
+            size="md"
+          />
         </div>
       </nav>
 
@@ -115,11 +116,11 @@ export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'creat
 
       <div
         id="topo"
-        className="relative z-10 flex-1 flex justify-center px-3 md:px-8 pt-14 md:pt-[72px]"
+        className="relative z-10 flex-1 flex justify-center px-3 md:px-8 pt-14 md:pt-18"
         style={{ perspective: 1600 }}
       >
         <motion.div
-          className="relative w-full max-w-[640px] self-start min-h-[calc(100dvh-96px)] md:min-h-0 md:aspect-[5/7] -mb-12 md:mb-0"
+          className="relative w-full max-w-160 self-start min-h-[calc(100dvh-96px)] md:min-h-0 md:aspect-5/7 -mb-12 md:mb-0"
           style={{ transformStyle: 'preserve-3d' }}
           initial={reduce ? false : { rotateY: 180, y: 120, rotate: -4 }}
           animate={{ rotateY: 0, y: 0, rotate: 0 }}
@@ -162,7 +163,7 @@ export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'creat
             <CrossLogo className="w-14 h-14 md:w-16 md:h-16 text-suit-red mt-6 md:mt-4" />
 
             <h1 className="font-display italic font-normal leading-[0.92] tracking-[-0.02em] text-[clamp(4rem,15vw,7.5rem)] mt-6 md:mt-8 flex flex-col">
-              <span className="md:-translate-x-[12%]">
+              <span className="md:translate-x-[-12%]">
                 Cross
               </span>
 
@@ -200,13 +201,13 @@ export function HomeHero({ onChooseJoinMode }: { onChooseJoinMode: (mode: 'creat
             </div>
 
             <div className="mt-9 flex flex-col sm:flex-row items-center gap-5">
-              <a
+              <ActionButton
                 href="#jogar"
+                label="Criar uma sala"
+                tone="ink"
+                size="md"
                 onClick={() => onChooseJoinMode('create')}
-                className="home-button bg-ink text-paper hover:bg-felt-deep"
-              >
-                Criar uma sala
-              </a>
+              />
 
               <a
                 href="#jogar"

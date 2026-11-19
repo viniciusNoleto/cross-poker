@@ -6,6 +6,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { Card } from '@/resources/game/components/Card';
+import { ActionButton, CardsGlyph } from '@/resources/game/components/ActionButton';
 import { COMBO_NAME } from '@/resources/game/components/MeldScoreAnimation';
 import { bestCombo } from '@/resources/game/models/Combo';
 import { buildDeck, shuffle } from '@/resources/game/models/Deck';
@@ -131,7 +132,7 @@ export function HomeLiveMeld() {
                       </span>
 
                       <span className="flex items-baseline gap-3">
-                        <span className="font-display text-[clamp(4rem,2.6rem+4.4vw,6.5rem)] leading-[0.85] tabular">
+                        <span className="font-display text-[clamp(4rem,2.6rem+4.4vw,6.5rem)] leading-[0.85] tabular-nums">
                           {points}
                         </span>
 
@@ -140,7 +141,7 @@ export function HomeLiveMeld() {
                         </span>
                       </span>
 
-                      <span className="text-[1.1875rem] tabular text-paper">
+                      <span className="text-[1.1875rem] tabular-nums text-paper">
                         {`(${baseChips} base + ${cardChips} das cartas) × ${combo!.multiplier}`}
                       </span>
                     </div>
@@ -148,7 +149,7 @@ export function HomeLiveMeld() {
                 },
                 {
                   content: () => (
-                    <div className="flex flex-col gap-4 min-h-[188px] justify-center">
+                    <div className="flex flex-col gap-4 min-h-47 justify-center">
                       <span className="font-display italic text-[clamp(2.25rem,1.5rem+2.4vw,3.25rem)] leading-none text-paper">
                         Escolha suas cartas
                       </span>
@@ -193,15 +194,15 @@ export function HomeLiveMeld() {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <button
-              type="button"
+            <ActionButton
+              label="Dar outra mão"
+              tone="paper"
+              size="md"
+              badge={<CardsGlyph variant="stack" />}
               onClick={dealAgain}
-              className="home-button bg-paper text-ink hover:bg-white"
-            >
-              Dar outra mão
-            </button>
+            />
 
-            <span className="text-[1rem] text-paper tabular">
+            <span className="text-[1rem] text-paper tabular-nums">
               {`${selected.length} de ${MAX_SELECTED} cartas escolhidas`}
             </span>
           </div>

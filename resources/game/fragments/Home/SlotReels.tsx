@@ -50,7 +50,7 @@ function Tile({ item, state }: { item: ICard; state: 'idle' | 'scoring' | 'dim' 
       style={{ height: TILE }}
     >
       <div
-        className={`card-face w-[76px] h-[88px] rounded-[6px] flex flex-col items-center justify-center gap-0.5 transition-[opacity,box-shadow] duration-300 ${color} ${state === 'scoring' ? 'shadow-[0_0_0_3px_var(--gold),0_0_24px_rgba(242,183,57,0.55)]' : ''} ${state === 'dim' ? 'opacity-40' : ''}`}
+        className={`bg-paper-face w-19 h-22 rounded-md flex flex-col items-center justify-center gap-0.5 transition-[opacity,box-shadow] duration-300 ${color} ${state === 'scoring' ? 'ring-3 ring-gold shadow-[0_0_24px_rgba(242,183,57,0.55)]' : ''} ${state === 'dim' ? 'opacity-40' : ''}`}
       >
         <span className="font-display text-[2rem] leading-none font-medium">
           {item.rank}
@@ -117,7 +117,7 @@ export function HomeSlotReels() {
 
             return (
               <div
-                className="relative overflow-hidden rounded-[6px] bg-felt-deep w-[84px]"
+                className="relative overflow-hidden rounded-md bg-felt-deep w-21"
                 style={{ height: TILE }}
               >
                 <motion.div
@@ -146,7 +146,7 @@ export function HomeSlotReels() {
         </UtilsFor>
       </div>
 
-      <div className="relative w-full min-h-[112px] flex flex-col items-center justify-center text-center text-paper">
+      <div className="relative w-full min-h-28 flex flex-col items-center justify-center text-center text-paper">
         <AnimatePresence mode="wait">
           <UtilsIf
             cases={[
@@ -178,8 +178,8 @@ export function HomeSlotReels() {
                       {COMBO_NAME[combo.type]}
                     </span>
 
-                    <span className="flex items-baseline gap-2 tabular text-[1.0625rem]">
-                      <span className="bg-[#1d5fa8] px-2 py-0.5 rounded-[4px] font-bold">
+                    <span className="flex items-baseline gap-2 tabular-nums text-[1.0625rem]">
+                      <span className="bg-[#1d5fa8] px-2 py-0.5 rounded-sm font-bold">
                         {cardChips}
                       </span>
 
@@ -187,7 +187,7 @@ export function HomeSlotReels() {
                         ×
                       </span>
 
-                      <span className="bg-suit-red px-2 py-0.5 rounded-[4px] font-bold">
+                      <span className="bg-suit-red px-2 py-0.5 rounded-sm font-bold">
                         {combo.multiplier}
                       </span>
 

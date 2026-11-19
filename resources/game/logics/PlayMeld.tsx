@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton, CountChip } from '../components/ActionButton';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { playMeldService, PlayMeldServicePayload } from '../services/playMeld';
 
@@ -37,27 +37,27 @@ export function usePlayMeldLogicData({ gameId, onSuccess }: { gameId: number; on
  *
  * - `selectedCards`: ids of the cards selected in the hand — 1 to 5.
  * - `disabled`: not your turn / pending Swap; the route validates everything again server-side.
+ * - `remaining`: Jogadas left (shown on the button's chip).
  */
-export function PlayMeldLogicComponent({ selectedCards, disabled, onChooseSource }: {
+export function PlayMeldLogicComponent({ selectedCards, disabled, remaining, onChooseSource }: {
   selectedCards: string[];
   disabled?: boolean;
+  remaining: number;
   onChooseSource: () => void;
 }) {
-  const canPlay = selectedCards.length >= 1 && selectedCards.length <= 5 && !disabled;
+  const quantityValid = selectedCards.length >= 1 && selectedCards.length <= 5;
+  const canPlay = quantityValid && remaining > 0 && !disabled;
 
   return (
-    <FormButton
-      color="secondary"
-      size="md"
-      className="min-w-[112px]"
+    <ActionButton
+      label="Jogada"
+      tone="gold"
+      badge={<CountChip count={remaining} />}
       disabled={!canPlay}
-      tooltip={selectedCards.length === 0 ? 'Selecione de 1 a 5 cartas' : undefined}
-      rightIcon="lucide:hand"
+      tooltip={remaining === 0 ? 'Você não tem mais Jogadas' : (!disabled && !quantityValid ? 'Selecione de 1 a 5 cartas' : undefined)}
       onClick={() => {
         if (canPlay) onChooseSource();
       }}
-    >
-      Jogada
-    </FormButton>
+    />
   );
 }

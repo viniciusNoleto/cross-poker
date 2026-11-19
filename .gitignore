@@ -40,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# demo video (playwright)
+/.next-demo/
+/test-results-demo
+/playwright-report
+/videos
+
+# testes (vitest / playwright e2e)
+/.next-e2e/
+/test-results-e2e

@@ -1,6 +1,6 @@
 'use client';
 
-import { UtilsIf } from '@/components/utils/If';
+import { AnimatePresence } from 'motion/react';
 import { MeldScoreAnimation } from './MeldScoreAnimation';
 import { useAnimatedLastAction } from '../hooks/useAnimatedLastAction';
 import { EActionType } from '../enums/EActionType';
@@ -59,10 +59,14 @@ export function MeldScoreAnimationLayer({ state, onScoreCounted }: MeldScoreAnim
     clear();
   }
 
+  // AnimatePresence keeps the finished count mounted while its exit plays (cards gather into the
+  // middle, the cabinet sinks and fades), so it never vanishes in a single frame. It needs a
+  // keyed direct child to track — hence the conditional here instead of `UtilsIf`.
   return (
-    <UtilsIf condition={firing}>
-      {() => (
+    <AnimatePresence>
+      {firing && (
         <MeldScoreAnimation
+          key={newAction!.id}
           combo={newAction!.combo!}
           meldedCards={newAction!.melded_cards!}
           scoringCards={newAction!.scoring_cards!}
@@ -75,6 +79,6 @@ export function MeldScoreAnimationLayer({ state, onScoreCounted }: MeldScoreAnim
           onFinish={finish}
         />
       )}
-    </UtilsIf>
+    </AnimatePresence>
   );
 }

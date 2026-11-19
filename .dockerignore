@@ -9,3 +9,5 @@ coverage
 *.tsbuildinfo
 next-env.d.ts
 *.md
+.next-e2e
+test-results-e2e

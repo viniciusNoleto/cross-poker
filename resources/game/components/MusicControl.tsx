@@ -2,6 +2,7 @@
 
 import { Icon } from '@iconify/react';
 import { Button, Popover, Slider } from '@mantine/core';
+import { ActionButton } from './ActionButton';
 import { setMusicMuted, setMusicVolume, useMusicSettings } from '@/utils/music';
 
 // Background music control: mute + volume, independent from the sound effects (SoundToggle).
@@ -18,18 +19,16 @@ export function MusicControl({ className = '' }: { className?: string }) {
       shadow="md"
     >
       <Popover.Target>
-        <Button
-          variant="subtle"
-          color="gray.0"
-          className={className}
-          aria-label="Música de fundo"
-          title="Música de fundo"
-        >
-          <Icon
+        {/* Popover.Target needs an element that takes a ref: the span does, and the click bubbles up to it. */}
+        <span className={`inline-flex ${className}`}>
+          <ActionButton
+            label="Música de fundo"
+            tone="felt"
+            size="icon"
             icon="lucide:music"
-            className={`w-4 h-4 transition-opacity ${silent ? 'opacity-35' : ''}`}
+            iconClassName={`transition-opacity ${silent ? 'opacity-35' : ''}`}
           />
-        </Button>
+        </span>
       </Popover.Target>
 
       <Popover.Dropdown className="w-60">

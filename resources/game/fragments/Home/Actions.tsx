@@ -48,11 +48,11 @@ function MeldFragment() {
           Full House
         </span>
 
-        <span className="text-[1.0625rem] tabular">
+        <span className="text-[1.0625rem] tabular-nums">
           (40 + 48) × 4
         </span>
 
-        <span className="font-display text-[3.5rem] leading-none tabular">
+        <span className="font-display text-[3.5rem] leading-none tabular-nums">
           352
         </span>
       </div>
@@ -68,7 +68,7 @@ function DiscardFragment() {
     >
       <div className="flex items-center gap-10">
         <div className="flex flex-col items-center gap-2">
-          <div className="relative w-[68px] h-[95px]">
+          <div className="relative w-17 h-23.75">
             <Card
               card={null}
               size="lg"
@@ -82,7 +82,7 @@ function DiscardFragment() {
             />
           </div>
 
-          <span className="text-[0.9375rem] tabular">
+          <span className="text-[0.9375rem] tabular-nums">
             Monte · 20
           </span>
         </div>
@@ -102,13 +102,13 @@ function DiscardFragment() {
             </UtilsFor>
           </div>
 
-          <span className="text-[0.9375rem] tabular">
+          <span className="text-[0.9375rem] tabular-nums">
             Descarte · 6
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-3 w-full max-w-[380px]">
+      <div className="flex flex-col items-center gap-3 w-full max-w-95">
         <span className="text-[1rem]">
           Escolha de onde comprar 3 cartas
         </span>
@@ -202,7 +202,7 @@ function RoomFragment() {
           Código da sala
         </span>
 
-        <span className="font-display text-[clamp(3rem,2rem+3vw,4.5rem)] leading-none tracking-[0.12em] tabular">
+        <span className="font-display text-[clamp(3rem,2rem+3vw,4.5rem)] leading-none tracking-[0.12em] tabular-nums">
           7K2P9M
         </span>
       </div>
@@ -296,7 +296,7 @@ export function HomeActions() {
               <div className="md:col-span-6 home-frame flex flex-col gap-6 md:gap-10 pb-10 md:pb-14">
                 <h3
                   id={`${sheet.id}-titulo`}
-                  className="font-display font-medium text-[1.75rem] md:text-[2.75rem] leading-none h-14 md:h-[72px] flex items-center"
+                  className="font-display font-medium text-[1.75rem] md:text-[2.75rem] leading-none h-14 md:h-18 flex items-center"
                 >
                   {sheet.name}
                 </h3>
@@ -306,7 +306,7 @@ export function HomeActions() {
                 </p>
               </div>
 
-              <div className="md:col-span-6 md:mt-[72px] flex min-h-[380px]">
+              <div className="md:col-span-6 md:mt-18 flex min-h-95">
                 <sheet.Fragment />
               </div>
             </article>

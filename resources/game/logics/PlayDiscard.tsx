@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton, CountChip } from '../components/ActionButton';
 import { resolveApiMessage } from '@/utils/apiMessage';
 import { playDiscardService, PlayDiscardServicePayload } from '../services/playDiscard';
 
@@ -29,23 +29,26 @@ export function usePlayDiscardLogicData({ gameId, onSuccess }: { gameId: number;
 // one request (`playDiscardMutation.mutate({ cards, source })`). See game-concept.md,
 // "Compra junto com a ação".
 // `selectedCards`: ids of the selected hand cards. `canPlay`: your turn and no pending Swap.
-export function PlayDiscardLogicComponent({ selectedCards, canPlay, onChooseSource }: { selectedCards: string[]; canPlay: boolean; onChooseSource: () => void }) {
+// `remaining`: Descartes left (shown on the button's chip).
+export function PlayDiscardLogicComponent({ selectedCards, canPlay, remaining, onChooseSource }: { selectedCards: string[]; canPlay: boolean; remaining: number; onChooseSource: () => void }) {
   const quantityValid = selectedCards.length >= 1 && selectedCards.length <= 5;
+  const enabled = canPlay && quantityValid && remaining > 0;
 
   return (
-    <FormButton
-      variant="white"
-      color="dark"
-      size="md"
-      className="min-w-[112px]"
-      disabled={!canPlay || !quantityValid}
-      tooltip={!canPlay ? 'Aguarde sua vez' : (!quantityValid ? 'Selecione de 1 a 5 cartas' : undefined)}
-      rightIcon="lucide:trash-2"
+    <ActionButton
+      label="Descarte"
+      tone="red"
+      badge={(
+        <CountChip
+          count={remaining}
+          textClassName="text-paper"
+        />
+      )}
+      disabled={!enabled}
+      tooltip={remaining === 0 ? 'Você não tem mais Descartes' : (!canPlay ? 'Aguarde sua vez' : (!quantityValid ? 'Selecione de 1 a 5 cartas' : undefined))}
       onClick={() => {
-        if (canPlay && quantityValid) onChooseSource();
+        if (enabled) onChooseSource();
       }}
-    >
-      Descarte
-    </FormButton>
+    />
   );
 }

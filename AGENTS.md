@@ -15,6 +15,7 @@ Qualquer tarefa relacionada à lógica do jogo (sala, partida, mesa, bolo, troca
 ## Formatação JSX/TSX
 
 - Qualquer arquivo `.tsx` → `tsx-patterns.md` (atributos em linha própria, texto em linha própria, linha em branco entre elementos irmãos).
+- Qualquer classe Tailwind → `tailwind-native-classes.md` (sempre a classe nativa/canônica, ex. `min-h-8.5` em vez de `min-h-[34px]`; verifique com `npm run lint:tailwind`).
 
 ## Componentes de formulário
 

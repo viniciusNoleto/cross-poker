@@ -32,7 +32,7 @@ function ComboFace({ combo }: { combo: IComboInfo }) {
           {combo.name}
         </h3>
 
-        <p className="text-[1.0625rem] leading-[1.5]">
+        <p className="text-[1.0625rem] leading-normal">
           {DESCRIPTION[combo.id]}
         </p>
 
@@ -59,7 +59,7 @@ function ComboFace({ combo }: { combo: IComboInfo }) {
         </UtilsFor>
       </div>
 
-      <div className="flex items-baseline justify-between gap-4 text-[1.0625rem] tabular">
+      <div className="flex items-baseline justify-between gap-4 text-[1.0625rem] tabular-nums">
         <span>
           {`${combo.baseChips} fichas de base`}
         </span>
@@ -153,7 +153,7 @@ export function HomeCombos() {
             </p>
           </div>
 
-          <div className="flex h-[380px] w-full overflow-hidden">
+          <div className="flex h-95 w-full overflow-hidden">
             <UtilsFor
               each={COMBOS}
               eachKey={({ item }) => item.id}

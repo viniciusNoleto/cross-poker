@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, useReducedMotion } from 'motion/react';
 import { UtilsFor } from '@/components/utils/For';
+import { TEAM_PALETTE } from '@/shared/constants/colors';
 import { StackedChip } from '@/resources/game/components/PokerChip';
 
 const SUITS = [
@@ -28,7 +29,7 @@ function Stack({ colors, count, label, accent }: { colors: string[]; count: numb
   return (
     <div className="flex flex-col items-center gap-5">
       <div
-        className="relative w-[112px]"
+        className="relative w-28"
         style={{ height: 58 + colors.length * CHIP_STEP }}
       >
         <UtilsFor
@@ -60,7 +61,7 @@ function Stack({ colors, count, label, accent }: { colors: string[]; count: numb
           {label}
         </span>
 
-        <span className="font-display text-[1.75rem] leading-none tabular text-paper">
+        <span className="font-display text-[1.75rem] leading-none tabular-nums text-paper">
           {count * 25}
         </span>
       </div>
@@ -107,7 +108,7 @@ export function HomeChipStacks() {
   return (
     <div
       ref={rootRef}
-      className="felt-surface relative overflow-hidden min-h-[440px] md:min-h-[520px] flex items-end justify-center gap-10 md:gap-16 px-6 pb-12 pt-24"
+      className="felt-surface relative overflow-hidden min-h-110 md:min-h-130 flex items-end justify-center gap-10 md:gap-16 px-6 pb-12 pt-24"
       aria-hidden="true"
     >
       <UtilsFor
@@ -132,14 +133,14 @@ export function HomeChipStacks() {
           colors={TEAM_A}
           count={countA}
           label="Dupla A"
-          accent="var(--team-a)"
+          accent={TEAM_PALETTE.a}
         />
 
         <Stack
           colors={TEAM_B}
           count={countB}
           label="Dupla B"
-          accent="var(--team-b)"
+          accent={TEAM_PALETTE.b}
         />
       </div>
     </div>

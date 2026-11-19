@@ -1,3 +1,5 @@
+@reference "../../../../app/globals.css";
+
 /* Home (landing) — estilos que o Tailwind não expressa bem: recortes, pilhas fixas, cortina. */
 
 .home-frame {
@@ -18,8 +20,8 @@
 
 [data-reveal] {
   transition:
-    opacity 0.7s var(--ease-deal) calc(var(--i, 0) * 80ms),
-    transform 0.8s var(--ease-deal) calc(var(--i, 0) * 80ms);
+    opacity 0.7s --theme(--ease-deal) calc(var(--i, 0) * 80ms),
+    transform 0.8s --theme(--ease-deal) calc(var(--i, 0) * 80ms);
 }
 
 /* Carta do hero: cantos internos recortados como uma carta de baralho antiga. */
@@ -85,29 +87,6 @@
   z-index: 0;
 }
 
-/* Botões da home: blocos chapados, cantos retos, resposta ao toque. */
-.home-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 52px;
-  padding-inline: 26px;
-  font-weight: 700;
-  font-size: 1.0625rem;
-  letter-spacing: 0.005em;
-  border-radius: 6px;
-  transition: transform 0.18s var(--ease-deal), background-color 0.18s ease;
-}
-
-.home-button:hover {
-  transform: translateY(-2px);
-}
-
-.home-button:active {
-  transform: translateY(1px);
-}
-
 .home-link {
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
@@ -116,7 +95,7 @@
 }
 
 .home-link:hover {
-  text-decoration-color: var(--gold);
+  text-decoration-color: --theme(--color-gold);
 }
 
 /* Naipes que flutuam devagar sobre o feltro (animação das fichas). */
@@ -137,7 +116,7 @@
 
 /* Mão da peça interativa: cada carta chega da pilha, uma depois da outra. */
 .hand-deal {
-  animation: hand-deal 0.6s var(--ease-deal) both;
+  animation: hand-deal 0.6s --theme(--ease-deal) both;
   animation-delay: calc(var(--i, 0) * 55ms);
 }
 

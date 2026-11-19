@@ -3,20 +3,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'motion/react';
 import { useParams } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { useServerSentEvent } from '@/utils/hooks';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton } from '@/resources/game/components/ActionButton';
 import { Card } from '@/resources/game/components/Card';
 import { sortCardsBySuit, sortCardsByRank } from '@/resources/game/models/Card';
 import { bestCombo } from '@/resources/game/models/Combo';
 import { getGameService, GET_GAME_KEY } from '@/resources/game/services/getGame';
 import { ETeam } from '@/resources/game/enums/ETeam';
-import { IPublicGamePlayer } from '@/resources/game/models/GameState';
 import {
   ChooseSwapLogicComponent,
   StartSwapLogicComponent,
@@ -46,10 +44,7 @@ import { DrawAnimation } from '@/resources/game/components/DrawAnimation';
 import { SwapAnimation } from '@/resources/game/components/SwapAnimation';
 import { DiscardAnimation } from '@/resources/game/components/DiscardAnimation';
 import { EDrawSource } from '@/resources/game/enums/EDrawSource';
-import { TurnChip, TurnChipSide } from '@/resources/game/components/TurnChip';
-
-const INITIAL_MELDS = 5;
-const INITIAL_DISCARDS = 5;
+import { PlayerSeat } from '@/resources/game/components/PlayerSeat';
 
 const SEAT_POSITIONS = ['bottom', 'left', 'top', 'right'] as const;
 
@@ -57,150 +52,6 @@ const SEAT_POSITIONS = ['bottom', 'left', 'top', 'right'] as const;
 // score count is the longest) can finish before the end celebration and the result screen.
 const RESULT_DELAY_AFTER_MELD_MS = 5500;
 const RESULT_DELAY_MS = 1500;
-
-function Pips({ total, remaining, activeColor, label }: { total: number; remaining: number; activeColor: string; label: string }) {
-  return (
-    <div
-      className="flex items-center gap-1.5"
-      title={`${label}: ${remaining} de ${total}`}
-    >
-      <span className="hidden md:inline text-[12px] text-paper/80 w-[60px]">
-        {label}
-      </span>
-
-      <div className="flex gap-[3px]">
-        <UtilsFor
-          each={Array.from({ length: total })}
-          eachKey={({ index }) => index}
-        >
-          {({ index }) => (
-            <span
-              className={`w-2 h-2 rotate-45 ${index < remaining ? activeColor : 'bg-paper/15'}`}
-            />
-          )}
-        </UtilsFor>
-      </div>
-    </div>
-  );
-}
-
-const TEAM_SWATCH: Record<`${ETeam}`, string> = {
-  [ETeam.A]: 'bg-team-a',
-  [ETeam.B]: 'bg-team-b',
-};
-
-const TURN_RIPPLES = [0, 1, 2];
-
-// Rings that pop out around the seat and drift away, fading, when the turn reaches it.
-function TurnRipple() {
-  return (
-    <UtilsFor
-      each={TURN_RIPPLES}
-      eachKey={({ item }) => item}
-    >
-      {({ item }) => (
-        <motion.span
-          className="pointer-events-none absolute border-2 border-gold"
-          initial={{ top: 0, right: 0, bottom: 0, left: 0, opacity: 0.95 }}
-          animate={{ top: -30, right: -30, bottom: -30, left: -30, opacity: 0 }}
-          transition={{ duration: 1.2, delay: item * 0.32, ease: 'easeOut' }}
-          aria-hidden="true"
-        />
-      )}
-    </UtilsFor>
-  );
-}
-
-function PlayerSeat({ player, isCurrentTurn, isYou, turnKey, side }: { player: IPublicGamePlayer; isCurrentTurn: boolean; isYou: boolean; turnKey: string; side: TurnChipSide }) {
-  return (
-    <div className="relative flex flex-col gap-2 [@media(max-height:760px)]:gap-1 px-3 py-2.5 md:px-4 md:py-3 [@media(max-height:760px)]:py-2! bg-felt-night min-w-0 max-w-[132px] md:max-w-none">
-      <span
-        className={`absolute left-0 top-0 bottom-0 w-1 ${TEAM_SWATCH[player.team]}`}
-        aria-hidden="true"
-      />
-
-      <UtilsIf condition={isCurrentTurn}>
-        {() => (
-          <>
-            <TurnRipple key={turnKey} />
-
-            <TurnChip
-              side={side}
-              turnKey={turnKey}
-            />
-          </>
-        )}
-      </UtilsIf>
-
-      <div className="flex items-baseline justify-between gap-3 min-w-0">
-        <span className="font-display text-paper text-[17px] md:text-[20px] leading-tight truncate">
-          {player.name}
-        </span>
-
-        <span className="font-display text-gold text-[17px] md:text-[20px] leading-tight tabular">
-          {player.score}
-        </span>
-      </div>
-
-      <span className="text-[12px] text-paper/80 -mt-1.5 truncate">
-        <UtilsIf
-          cases={[
-            {
-              condition: isCurrentTurn,
-              content: () => (
-                <span className="text-gold font-bold">
-                  {isYou ? 'Sua vez' : 'Jogando agora'}
-                </span>
-              ),
-            },
-            {
-              content: () => (
-                <span>
-                  {`Equipe ${player.team}${isYou ? ' · você' : ''}`}
-                </span>
-              ),
-            },
-          ]}
-        />
-      </span>
-
-      <div className="flex flex-col gap-1 [@media(max-height:860px)]:md:flex-row [@media(max-height:860px)]:md:gap-3">
-        <Pips
-          label="Jogadas"
-          total={INITIAL_MELDS}
-          remaining={player.melds_remaining}
-          activeColor="bg-gold"
-        />
-
-        <Pips
-          label="Descartes"
-          total={INITIAL_DISCARDS}
-          remaining={player.discards_remaining}
-          activeColor="bg-paper"
-        />
-      </div>
-
-      <UtilsIf condition={!isYou}>
-        {() => (
-          <div className="hidden md:flex [@media(max-height:860px)]:hidden! mt-0.5 pl-2">
-            <UtilsFor
-              each={Array.from({ length: Math.min(player.hand_count, 8) })}
-              eachKey={({ index }) => index}
-            >
-              {() => (
-                <Card
-                  card={null}
-                  size="sm"
-                  className="-ml-3.5 first:ml-0"
-                />
-              )}
-            </UtilsFor>
-          </div>
-        )}
-      </UtilsIf>
-    </div>
-  );
-}
 
 export default function GamePage() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -494,7 +345,7 @@ export default function GamePage() {
 
         {/* Wraps (upward, via wrap-reverse) when its 1fr column gets too narrow, so the
             buttons never push the scoreboard off the center. */}
-        <div className="justify-self-end min-w-0 flex flex-wrap-reverse items-center justify-end gap-1">
+        <div className="justify-self-end min-w-0 flex flex-wrap-reverse items-center justify-end gap-1.5">
           <MusicControl />
 
           <SoundToggle />
@@ -524,7 +375,7 @@ export default function GamePage() {
           {
             content: () => (
               <>
-                <div className="shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-3 md:pt-4 px-3 min-h-[34px]">
+                <div className="shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-3 md:pt-4 px-3 min-h-8.5">
                   <span
                     className="font-display text-[22px] md:text-[26px] leading-none"
                     aria-live="polite"
@@ -582,9 +433,9 @@ export default function GamePage() {
                   )}
                 </UtilsIf>
 
-                <div className="relative w-full max-w-4xl mx-auto flex-1 grid grid-rows-[auto_1fr_auto] gap-3 md:gap-4 items-center px-2 md:px-4 py-3 min-h-0">
+                <div className="relative w-full max-w-4xl mx-auto flex-1 grid grid-rows-[auto_1fr_auto] gap-3 md:gap-4 items-center px-1 sm:px-2 md:px-4 py-3 min-h-0">
                   <div
-                    className="pointer-events-none absolute left-[12%] right-[12%] top-[16%] bottom-[16%] md:left-[18%] md:right-[18%] rounded-[999px] bg-felt border-[10px] md:border-[14px] border-[#3a2414]"
+                    className="pointer-events-none absolute left-[12%] right-[12%] top-[16%] bottom-[16%] md:left-[18%] md:right-[18%] rounded-[999px] bg-felt border-10 md:border-14 border-[#3a2414]"
                     aria-hidden="true"
                   />
 
@@ -613,13 +464,12 @@ export default function GamePage() {
                           side="top"
                           isCurrentTurn={shownTurnSeat === item.player.seat}
                           turnKey={turnKey}
-                          isYou={false}
                         />
                       )}
                     </UtilsFor>
                   </div>
 
-                  <div className="relative row-start-2 flex items-center justify-between gap-2">
+                  <div className="relative row-start-2 flex items-center justify-between gap-1 sm:gap-2">
                     <UtilsFor each={playersBySeat.filter((p) => p.position === 'left')}>
                       {({ item }) => (
                         <PlayerSeat
@@ -627,23 +477,22 @@ export default function GamePage() {
                           side="left"
                           isCurrentTurn={shownTurnSeat === item.player.seat}
                           turnKey={turnKey}
-                          isYou={false}
                         />
                       )}
                     </UtilsFor>
 
-                    <div className="flex items-start gap-3 md:gap-6">
+                    <div className="flex items-start gap-1.5 sm:gap-3 md:gap-6">
                       <div className="flex flex-col items-center gap-1.5">
                         <div className="relative">
                           <Card
                             card={null}
-                            className="absolute! top-0 left-0 translate-x-[3px] translate-y-[3px]"
+                            className="absolute! top-0 left-0 translate-x-0.75 translate-y-0.75"
                           />
 
                           <Card card={null} />
                         </div>
 
-                        <span className="text-paper/85 text-[13px] tabular">
+                        <span className="text-paper/85 text-[13px] tabular-nums">
                           {`Monte (${state?.deck_count ?? 0})`}
                         </span>
                       </div>
@@ -660,7 +509,6 @@ export default function GamePage() {
                           side="right"
                           isCurrentTurn={shownTurnSeat === item.player.seat}
                           turnKey={turnKey}
-                          isYou={false}
                         />
                       )}
                     </UtilsFor>
@@ -674,7 +522,6 @@ export default function GamePage() {
                           side="bottom"
                           isCurrentTurn={shownTurnSeat === item.player.seat}
                           turnKey={turnKey}
-                          isYou
                         />
                       )}
                     </UtilsFor>
@@ -686,7 +533,7 @@ export default function GamePage() {
                   aria-label="Sua mão"
                 >
                   <div className="w-full max-w-4xl flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                    <span className="font-display italic text-gold text-[22px] leading-none min-h-[22px]">
+                    <span className="font-display italic text-gold text-[22px] leading-none min-h-5.5">
                       <UtilsIf
                         cases={[
                           {
@@ -708,26 +555,24 @@ export default function GamePage() {
                       />
                     </span>
 
-                    <div className="flex items-center gap-1">
-                      <FormButton
-                        variant={handOrder === 'suit' ? 'filled' : 'subtle'}
-                        color={handOrder === 'suit' ? 'secondary' : 'gray.0'}
-                        size="xs"
-                        rightIcon="lucide:layout-grid"
+                    <div className="flex items-center gap-1.5">
+                      <ActionButton
+                        label="Naipe"
+                        tone={handOrder === 'suit' ? 'gold' : 'felt'}
+                        size="sm"
+                        icon="lucide:layout-grid"
+                        pressed={handOrder === 'suit'}
                         onClick={() => setHandOrder(handOrder === 'suit' ? null : 'suit')}
-                      >
-                        Naipe
-                      </FormButton>
+                      />
 
-                      <FormButton
-                        variant={handOrder === 'rank' ? 'filled' : 'subtle'}
-                        color={handOrder === 'rank' ? 'secondary' : 'gray.0'}
-                        size="xs"
-                        rightIcon="lucide:arrow-up-down"
+                      <ActionButton
+                        label="Valor"
+                        tone={handOrder === 'rank' ? 'gold' : 'felt'}
+                        size="sm"
+                        icon="lucide:arrow-up-down"
+                        pressed={handOrder === 'rank'}
                         onClick={() => setHandOrder(handOrder === 'rank' ? null : 'rank')}
-                      >
-                        Valor
-                      </FormButton>
+                      />
                     </div>
                   </div>
 
@@ -750,7 +595,7 @@ export default function GamePage() {
 
                   {/* The draw-source choice and the swap choice take the place of the action buttons
                       (which are blocked meanwhile anyway), so the dock never grows and the screen never scrolls. */}
-                  <div className="min-h-[42px] flex items-center justify-center">
+                  <div className="min-h-15.5 flex items-center justify-center">
                     <UtilsIf
                       cases={[
                         {
@@ -779,16 +624,18 @@ export default function GamePage() {
                         },
                         {
                           content: () => (
-                            <div className="flex flex-wrap items-center justify-center gap-2">
+                            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
                               <PlayMeldLogicComponent
                                 selectedCards={selectedCards}
                                 disabled={!canAct}
+                                remaining={you?.melds_remaining ?? 0}
                                 onChooseSource={() => openDrawChoice(EActionType.MELD)}
                               />
 
                               <PlayDiscardLogicComponent
                                 selectedCards={selectedCards}
                                 canPlay={canAct}
+                                remaining={you?.discards_remaining ?? 0}
                                 onChooseSource={() => openDrawChoice(EActionType.DISCARD)}
                               />
 

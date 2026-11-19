@@ -94,7 +94,7 @@ export function GameEndAnimation({ outcome, title, onFinish }: {
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[300] overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-300 overflow-hidden"
       aria-hidden="true"
     >
       <motion.div

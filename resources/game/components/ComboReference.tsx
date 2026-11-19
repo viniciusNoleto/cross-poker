@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Modal } from '@mantine/core';
-import { FormButton } from '@/components/form/Button';
+import { ActionButton } from './ActionButton';
 import { UtilsFor } from '@/components/utils/For';
 import { UtilsIf } from '@/components/utils/If';
 import { Card } from './Card';
@@ -208,17 +208,15 @@ export function ComboHelpButton() {
 
   return (
     <>
-      <FormButton
-        variant="subtle"
-        color="gray.0"
-        leftIcon="lucide:circle-help"
+      <ActionButton
+        label="Como pontuar"
+        tone="felt"
+        size="sm"
+        icon="lucide:circle-help"
+        labelClassName="hidden sm:inline"
         tooltip="Como pontuar"
         onClick={() => setOpened(true)}
-      >
-        <span className="hidden sm:inline">
-          Como pontuar
-        </span>
-      </FormButton>
+      />
 
       <ComboReferenceLogicComponent
         opened={opened}

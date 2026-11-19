@@ -79,7 +79,7 @@ export function HomeHowItWorks() {
           <div
             data-reveal
             style={{ '--i': 1 } as React.CSSProperties}
-            className="slip bg-paper text-ink px-6 md:px-9 pt-8 md:pt-10 pb-14 tabular"
+            className="slip bg-paper text-ink px-6 md:px-9 pt-8 md:pt-10 pb-14 tabular-nums"
           >
             <p className="font-display text-[1.75rem] leading-none">
               Uma partida de Cross Poker

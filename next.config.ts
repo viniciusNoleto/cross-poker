@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // O vídeo de demonstração (`npm run demo:video`) compila em `.next-demo`, para não disputar o `.next`
+  // com o `next dev` do container, e usa o `tsconfig.demo.json`, que ignora os tipos gerados no `.next`.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+  typescript: {
+    tsconfigPath: process.env.NEXT_TSCONFIG || 'tsconfig.json',
+  },
   // Atrás do Nginx Proxy Manager: sem isto o nginx bufferiza as respostas em streaming
   // (SSE de /api/rooms/[code]/stream e /api/games/[gameId]/stream) e o tempo real trava.
   async headers() {
